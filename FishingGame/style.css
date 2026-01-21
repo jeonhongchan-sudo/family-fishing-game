@@ -738,3 +738,43 @@ h1 {
         font-size: 2rem;
     }
 }
+
+/* Inventory New Styles */
+.inventory-section {
+    margin-bottom: 20px;
+}
+
+.inv-section-title {
+    font-size: 1rem;
+    color: #fbbf24;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.inventory-grid-mini {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.inv-item-mini {
+    background-color: #1e293b;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #334155;
+}
+
+.inv-item-mini.selected-bait {
+    border-color: #38bdf8;
+    background-color: #1e3a8a; /* 선택된 미끼 강조 */
+}
+
+.inv-desc {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}

@@ -154,9 +154,13 @@ function loginSuccess(profile) {
     }
 }
 
-async function savePlayerData(stats) {
+async function savePlayerData(stats, retryCount = 0) {
     const indicator = document.getElementById('save-indicator');
-    if (indicator) indicator.classList.remove('hidden');
+    if (indicator) {
+        indicator.classList.remove('hidden');
+        if (retryCount === 0) indicator.textContent = "💾 저장 중...";
+        indicator.style.color = "#fbbf24"; // 작업 중: 노란색
+    }
 
     if (!currentUserId) return; // 로그인 안 했으면 저장 안 함
 
@@ -176,15 +180,38 @@ async function savePlayerData(stats) {
     const { error } = await _supabase.from('profiles').upsert(updates);
     if (error) {
         console.error('Error saving player data:', error.message || error); 
+        
+        // 스키마 오류 감지 (컬럼 없음) - 재시도 하지 않음
+        if (error.message && error.message.includes('Could not find the')) {
+            if (indicator) {
+                indicator.textContent = "⚠️ DB 업데이트 필요";
+                indicator.style.color = "#ef4444";
+            }
+            console.error("Supabase SQL Editor에서 'baits'와 'selected_bait' 컬럼을 추가해주세요.");
+            return; 
+        }
+
+        // 재시도 로직 (최대 3번)
+        if (retryCount < 3) {
+            console.log(`Retrying save... (${retryCount + 1}/3)`);
+            if (indicator) indicator.textContent = `📡 재시도 중(${retryCount + 1})...`;
+            setTimeout(() => savePlayerData(stats, retryCount + 1), 1000); // 1초 후 재시도
+            return;
+        }
+
         if (indicator) {
             indicator.textContent = "⚠️ 저장 실패";
             indicator.style.color = "#ef4444";
         }
     } else {
         // 저장 성공 시 잠시 후 표시 숨김
+        if (indicator) {
+            indicator.textContent = "✅ 저장됨";
+            indicator.style.color = "#4ade80";
+        }
         setTimeout(() => {
             if (indicator) indicator.classList.add('hidden');
-        }, 500);
+        }, 1000);
     }
 }
 window.savePlayerData = savePlayerData; // 전역 접근 허용

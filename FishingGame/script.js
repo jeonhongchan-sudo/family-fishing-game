@@ -128,6 +128,15 @@ const BAIT_TYPES = {
     "lure": { name: "황금 루어", price: 2000, rarities: ["Rare", "Epic", "Legendary", "Mythical"], emoji: "✨", description: "전설의 물고기를 유혹하는 빛나는 루어." }
 };
 
+const SAFE_ROD_LEVEL = {
+    "Common": 1,
+    "Uncommon": 1,
+    "Rare": 2,
+    "Epic": 3,
+    "Legendary": 4,
+    "Mythical": 4
+};
+
 // --- 상태 관리 (State) ---
 
 let playerStats = {
@@ -511,18 +520,29 @@ function startReelingGame() {
     playerStats.thrashTimer = 0;
     
     // 물고기 등급에 따른 난이도 설정
-    let baseDrain = 0.8; // 기본 감소율 상향 (기존 0.5)
+    let baseDrain = 0.8; // 기본 감소율 상향 (0.5 -> 0.8)
     const rarity = playerStats.targetFish.rarity;
-    let thrashChance = 0.02; // 틱당 저항 확률 (2%)
+    let thrashChance = 0.05; // 틱당 저항 확률 상향 (2% -> 5%)
     
-    if (rarity === 'Uncommon') { baseDrain = 1.2; thrashChance = 0.04; }
-    if (rarity === 'Rare') { baseDrain = 1.8; thrashChance = 0.06; }
-    if (rarity === 'Epic') { baseDrain = 2.5; thrashChance = 0.08; }
-    if (rarity === 'Legendary') { baseDrain = 3.5; thrashChance = 0.12; }
-    if (rarity === 'Mythical') { baseDrain = 5.0; thrashChance = 0.15; }
+    if (rarity === 'Uncommon') { baseDrain = 1.2; thrashChance = 0.08; }
+    if (rarity === 'Rare') { baseDrain = 1.8; thrashChance = 0.12; }
+    if (rarity === 'Epic') { baseDrain = 2.5; thrashChance = 0.15; }
+    if (rarity === 'Legendary') { baseDrain = 3.5; thrashChance = 0.20; }
+    if (rarity === 'Mythical') { 
+        baseDrain = 6.0; // 신화급은 기본 감소량이 매우 높음
+        thrashChance = 0.30; // 30% 확률로 미친듯이 저항
+    }
 
-    // 낚싯줄 레벨이 높으면 감소율 완화
-    baseDrain = Math.max(0.3, baseDrain - (playerStats.lineLevel * 0.15));
+    // 낚싯줄 레벨 보정 (등급별로 줄의 영향력 차등 적용)
+    let lineReduction = playerStats.lineLevel * 0.1;
+    
+    // 신화급은 좋은 줄이 아니면 감소량을 버틸 수 없음
+    if (rarity === 'Mythical') lineReduction = playerStats.lineLevel * 0.5; 
+    else if (rarity === 'Legendary') lineReduction = playerStats.lineLevel * 0.3;
+    else if (rarity === 'Epic') lineReduction = playerStats.lineLevel * 0.2;
+
+    // 최종 감소율 계산 (최소 0.3 보장)
+    baseDrain = Math.max(0.3, baseDrain - lineReduction);
 
     // 게임 루프
     if (playerStats.reelingInterval) clearInterval(playerStats.reelingInterval);
@@ -556,10 +576,32 @@ function startReelingGame() {
         let currentDrain = baseDrain;
         
         if (playerStats.isThrashing) {
-            // 저항 중일 때는 감소량이 2.5배
+            // 저항 중일 때는 감소량이 2.5배 (2.0 -> 2.5 복구)
             currentDrain *= 2.5;
             // 찌가 미친듯이 흔들림
             ui.bobber.style.transform = `translate(${Math.random()*10 - 5}px, ${Math.random()*10 - 5}px)`;
+        }
+
+        // 3. 낚싯대 파손 체크 (등급 차이에 따른 위험도)
+        if (playerStats.isThrashing) {
+            const safeLevel = SAFE_ROD_LEVEL[playerStats.targetFish.rarity] || 1;
+            // 낚싯대 레벨이 권장 레벨보다 낮으면 파손 위험 발생
+            if (playerStats.rodLevel < safeLevel) {
+                const gap = safeLevel - playerStats.rodLevel;
+                // 격차가 클수록 파손 확률 급증 (틱당 0.5% ~ 2%)
+                // 1초(20틱) 동안 버틸 확률: 갭1(90%), 갭2(81%), 갭3(66%)
+                const breakChance = 0.005 * gap * (gap >= 2 ? 2 : 1);
+                
+                // 전설/신화 등급은 낚싯대가 안 좋으면 거의 즉시 부러짐 (확률 5배)
+                if (rarity === 'Legendary' || rarity === 'Mythical') {
+                    breakChance *= 5;
+                }
+                
+                if (Math.random() < breakChance) {
+                    endReeling(false, 'broken');
+                    return; // 루프 종료
+                }
+            }
         }
 
         playerStats.reelingProgress -= currentDrain;
@@ -567,7 +609,7 @@ function startReelingGame() {
 
         // 실패 조건
         if (playerStats.reelingProgress <= 0) {
-            endReeling(false);
+            endReeling(false, 'escape');
         }
         // 성공 조건
         if (playerStats.reelingProgress >= 100) {
@@ -605,11 +647,11 @@ function handleReelClick() {
     if (navigator.vibrate) navigator.vibrate(15);
 
     // 낚싯대 레벨에 따른 게이지 증가량
-    let reelPower = 4 + (playerStats.rodLevel * 0.6);
+    let reelPower = 3 + (playerStats.rodLevel * 0.5); // 기본 파워 하향 (4 -> 3)
 
-    // 물고기가 저항 중일 때는 릴 감는 효율이 50%로 감소 (당기는 힘 구현)
+    // 물고기가 저항 중일 때는 릴 감는 효율이 40%로 급감 (80% -> 40%)
     if (playerStats.isThrashing) {
-        reelPower *= 0.5;
+        reelPower *= 0.4;
         // 저항 중 클릭 시 찌가 더 크게 튐
         ui.bobber.style.top = (parseFloat(ui.bobber.style.top) + 2) + '%';
     } else {
@@ -643,7 +685,7 @@ function updateReelingUI() {
     ui.fishDistance.textContent = distance;
 }
 
-async function endReeling(isSuccess) {
+async function endReeling(isSuccess, reason = 'escape') {
     clearInterval(playerStats.reelingInterval);
     ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite"; // 애니메이션 복구
     ui.mainMessage.style.color = "white"; // 메시지 색상 복구
@@ -685,8 +727,15 @@ async function endReeling(isSuccess) {
         }
     } else {
         // 실패
-        ui.mainMessage.textContent = "놓쳤습니다...";
-        ui.subMessage.textContent = "미끼만 먹고 도망갔네요.";
+        if (reason === 'broken') {
+            ui.mainMessage.textContent = "낚싯대가 부러졌습니다!!";
+            ui.subMessage.textContent = "물고기의 힘을 낚싯대가 버티지 못했습니다.";
+            ui.mainMessage.style.color = "#ef4444";
+            if (navigator.vibrate) navigator.vibrate(500); // 길게 진동
+        } else {
+            ui.mainMessage.textContent = "놓쳤습니다...";
+            ui.subMessage.textContent = "미끼만 먹고 도망갔네요.";
+        }
     }
 
     currentState = GameState.IDLE;
@@ -904,10 +953,67 @@ function closeInventory() {
 
 function updateInventoryUI() {
     ui.inventoryList.innerHTML = '';
-    // 총 가치 계산 로직 제거
+    
+    // 1. 장비 & 미끼 섹션 (새로 추가)
+    const equipSection = document.createElement('div');
+    equipSection.className = 'inventory-section';
+    equipSection.innerHTML = '<h3 class="inv-section-title">🎒 장비 & 미끼</h3>';
+    
+    const equipGrid = document.createElement('div');
+    equipGrid.className = 'inventory-grid-mini';
+
+    // 현재 장착 중인 낚싯대
+    const currentRod = ROD_UPGRADES[playerStats.rodLevel - 1];
+    equipGrid.innerHTML += `
+        <div class="inv-item-mini">
+            <div class="inv-emoji">🎣</div>
+            <div class="inv-info">
+                <div class="inv-name">${currentRod.name}</div>
+                <div class="inv-desc">Lv.${playerStats.rodLevel}</div>
+            </div>
+        </div>
+    `;
+
+    // 현재 장착 중인 낚싯줄
+    const currentLine = LINE_UPGRADES[playerStats.lineLevel - 1];
+    equipGrid.innerHTML += `
+        <div class="inv-item-mini">
+            <div class="inv-emoji">🧵</div>
+            <div class="inv-info">
+                <div class="inv-name">${currentLine.name}</div>
+                <div class="inv-desc">Lv.${playerStats.lineLevel}</div>
+            </div>
+        </div>
+    `;
+
+    // 보유 중인 미끼 (기본 미끼 포함)
+    Object.entries(playerStats.baits).forEach(([key, count]) => {
+        if (count === 0 && key !== 'paste') return; // 없는 미끼는 숨김
+        const bait = BAIT_TYPES[key];
+        const countText = count === Infinity ? "∞" : `${count}개`;
+        const isSelected = playerStats.selectedBait === key ? 'selected-bait' : '';
+        
+        equipGrid.innerHTML += `
+            <div class="inv-item-mini ${isSelected}">
+                <div class="inv-emoji">${bait.emoji}</div>
+                <div class="inv-info">
+                    <div class="inv-name">${bait.name}</div>
+                    <div class="inv-desc">${countText}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    equipSection.appendChild(equipGrid);
+    ui.inventoryList.appendChild(equipSection);
+
+    // 2. 물고기 섹션
+    const fishSection = document.createElement('div');
+    fishSection.className = 'inventory-section';
+    fishSection.innerHTML = '<h3 class="inv-section-title">🐟 어망 (잡은 물고기)</h3>';
 
     if (playerStats.inventory.length === 0) {
-        ui.inventoryList.innerHTML = '<div class="empty-msg">가방이 비었습니다.</div>';
+        fishSection.innerHTML += '<div class="empty-msg">잡은 물고기가 없습니다.</div>';
     } else {
         // 희귀도 순 정렬 (Mythical -> Common)
         const rarityOrder = { "Mythical": 6, "Legendary": 5, "Epic": 4, "Rare": 3, "Uncommon": 2, "Common": 1 };
@@ -926,9 +1032,10 @@ function updateInventoryUI() {
                     <div class="inv-price">${item.price} G</div>
                 </div>
             `;
-            ui.inventoryList.appendChild(itemEl);
+            fishSection.appendChild(itemEl);
         });
     }
+    ui.inventoryList.appendChild(fishSection);
 }
 
 // --- 랭킹 로직 (Ranking Logic) ---
@@ -1047,10 +1154,10 @@ function renderEquipmentGuide() {
     rodList.className = 'equip-list';
     
     const rodEffects = [
-        "기본 물고기 획득 가능",
-        "희귀(Rare) 물고기 획득 가능",
-        "영웅(Epic) 물고기 획득 가능",
-        "전설/신화(Legendary/Mythical) 획득 가능"
+        "기본 물고기 안전하게 제압",
+        "희귀(Rare) 물고기 안전하게 제압",
+        "영웅(Epic) 물고기 안전하게 제압",
+        "전설/신화까지 안전하게 제압"
     ];
 
     ROD_UPGRADES.forEach((rod, index) => {
