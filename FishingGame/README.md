@@ -15,10 +15,10 @@
 - **Deployment**: Cloudflare Pages
 
 ## 🚀 배포 방법 (Cloudflare Pages)
-1. 이 저장소를 GitHub에 올립니다.
+1. 이 저장소를 GitHub 저장소([jeonhongchan-sudo/family-fishing-game](https://github.com/jeonhongchan-sudo/family-fishing-game))에 올립니다.
 2. Cloudflare Dashboard에 로그인하여 **Workers & Pages** > **Pages**로 이동합니다.
 3. **Connect to Git**을 선택하고 이 저장소를 연결합니다.
-4. **Build settings**는 기본값(Framework: None)으로 둡니다.
+4. **Build settings**에서 **Root directory**를 `FishingGame`으로 설정합니다. (Framework: None)
 5. **Save and Deploy**를 클릭하면 완료!
 
 ## ⚠️ 주의사항
