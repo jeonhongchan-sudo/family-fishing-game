@@ -169,7 +169,7 @@ h1 {
 
 .controls {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5개 버튼 균등 배치 */
+    grid-template-columns: repeat(3, 1fr); /* 3열 2행으로 변경 (총 6개 버튼) */
     gap: 6px;
     width: 100%;
 }
@@ -258,6 +258,11 @@ h1 {
     color: white;
 }
 .secondary-btn:hover { background-color: #334155; }
+.secondary-btn:disabled {
+    background-color: #1e293b;
+    color: #475569;
+    cursor: not-allowed;
+}
 
 /* Modal Styles */
 .modal {
@@ -314,6 +319,13 @@ h1 {
 }
 .upgrade-btn:hover { background-color: #047857; }
 .upgrade-btn:disabled { background-color: #334155; color: #64748b; cursor: not-allowed; }
+
+.bait-shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
 
 /* Inventory Styles */
 .inventory-grid {

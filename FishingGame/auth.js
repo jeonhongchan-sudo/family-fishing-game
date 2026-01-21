@@ -96,6 +96,8 @@ async function handleSignUp(e) {
         rod_level: 1,
         line_level: 1,
         inventory: [],
+        baits: { "paste": Infinity }, // 기본 미끼 무제한
+        selected_bait: "paste",
         updated_at: new Date()
     };
 
@@ -166,6 +168,8 @@ async function savePlayerData(stats) {
         rod_level: stats.rodLevel,
         line_level: stats.lineLevel,
         inventory: stats.inventory,
+        baits: stats.baits,
+        selected_bait: stats.selectedBait,
         updated_at: new Date()
     };
 

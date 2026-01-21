@@ -4,6 +4,7 @@ const GameState = {
     IDLE: 'IDLE',
     CASTING: 'CASTING',
     WAITING: 'WAITING',
+    HOOKING: 'HOOKING',
     REELING: 'REELING',
     CAUGHT: 'CAUGHT'
 };
@@ -120,6 +121,13 @@ const LINE_UPGRADES = [
     { name: "미스릴 줄", cost: 10000 }
 ];
 
+const BAIT_TYPES = {
+    "paste": { name: "떡밥", price: 0, rarities: ["Common", "Uncommon"], emoji: "🍡", description: "기본 미끼. 흔한 물고기만 꼬입니다." },
+    "worm": { name: "지렁이", price: 100, rarities: ["Common", "Uncommon", "Rare"], emoji: "🪱", description: "꿈틀거리는 지렁이. 희귀 어종도 좋아합니다." },
+    "krill": { name: "크릴새우", price: 500, rarities: ["Common", "Uncommon", "Rare", "Epic"], emoji: "🦐", description: "고급 미끼. 대물들이 냄새를 맡고 옵니다." },
+    "lure": { name: "황금 루어", price: 2000, rarities: ["Rare", "Epic", "Legendary", "Mythical"], emoji: "✨", description: "전설의 물고기를 유혹하는 빛나는 루어." }
+};
+
 // --- 상태 관리 (State) ---
 
 let playerStats = {
@@ -129,11 +137,16 @@ let playerStats = {
     rodLevel: 1,
     lineLevel: 1,
     inventory: [], // { name, count, emoji, rarity, price }
+    baits: { "paste": Infinity }, // 보유 미끼
+    selectedBait: "paste",        // 현재 선택된 미끼
     
     // 로컬 게임 상태 (DB에 저장 안 함)
     reelingProgress: 0, // 0 ~ 100
     targetFish: null,
-    reelingInterval: null
+    reelingInterval: null,
+    isThrashing: false, // 물고기가 저항 중인지 여부
+    thrashTimer: 0,     // 저항 지속 시간
+    hookTimer: null     // 챔질 타이머
 };
 
 let currentState = GameState.IDLE;
@@ -199,11 +212,17 @@ function startGameWithProfile(profile) {
     playerStats.rodLevel = Number(profile.rod_level) || 1;
     playerStats.lineLevel = Number(profile.line_level) || 1;
     playerStats.inventory = profile.inventory || [];
+    playerStats.baits = profile.baits || { "paste": Infinity };
+    playerStats.selectedBait = profile.selected_bait || "paste";
+
+    // 떡밥은 항상 무제한 보장
+    playerStats.baits["paste"] = Infinity;
     
     // 게임 초기화
+    createBaitButton(); // 미끼 버튼 생성
     updateUI();
     setWeather();
-    addEventListeners();
+    addEventListeners(); // 이벤트 리스너 등록 (버튼 기능 활성화)
 }
 
 function addEventListeners() {
@@ -237,6 +256,43 @@ function addEventListeners() {
     });
 }
 
+// 미끼 버튼 동적 생성 (HTML에 없으므로)
+function createBaitButton() {
+    if (document.getElementById('bait-btn')) return;
+    
+    const controls = document.querySelector('.controls');
+    const btn = document.createElement('button');
+    btn.id = 'bait-btn';
+    btn.className = 'btn secondary-btn';
+    btn.onclick = toggleBait;
+    // 상점 버튼 앞에 추가하거나 맨 뒤에 추가
+    controls.appendChild(btn);
+}
+
+function toggleBait() {
+    const baitKeys = Object.keys(BAIT_TYPES);
+    // 보유 중인 미끼만 필터링 (개수가 0보다 크거나 무한대)
+    const ownedBaits = baitKeys.filter(k => playerStats.baits[k] > 0 || playerStats.baits[k] === Infinity);
+    
+    // 미끼가 하나뿐일 때 (기본 미끼만 있을 때) 안내 메시지
+    if (ownedBaits.length <= 1) {
+        alert("보유한 다른 미끼가 없습니다.\n상점에서 지렁이, 크릴새우 등을 구매하여\n더 좋은 물고기를 잡아보세요!");
+        return;
+    }
+
+    let currentIndex = ownedBaits.indexOf(playerStats.selectedBait);
+    let nextIndex = (currentIndex + 1) % ownedBaits.length;
+    playerStats.selectedBait = ownedBaits[nextIndex];
+    
+    updateUI();
+
+    // 변경 피드백
+    const newBait = BAIT_TYPES[playerStats.selectedBait];
+    ui.mainMessage.textContent = `미끼 변경: ${newBait.name}`;
+    ui.subMessage.textContent = newBait.description;
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
 async function updateUI() {
     ui.gold.textContent = playerStats.gold.toLocaleString();
     ui.level.textContent = playerStats.level;
@@ -256,6 +312,15 @@ async function updateUI() {
         ui.reelingOverlay.classList.add('hidden');
         ui.bobber.classList.add('hidden');
         updateLinePosition(false); // 줄 숨기기
+
+        // 미끼 버튼 업데이트
+        const baitBtn = document.getElementById('bait-btn');
+        if (baitBtn) {
+            const bait = BAIT_TYPES[playerStats.selectedBait];
+            const count = playerStats.baits[playerStats.selectedBait];
+            const countText = count === Infinity ? "∞" : count;
+            baitBtn.innerHTML = `<div class="btn-icon">${bait.emoji}</div><div class="btn-label">${bait.name} (${countText})</div>`;
+        }
     } else {
         ui.castBtn.disabled = true;
         ui.shopBtn.disabled = true;
@@ -263,13 +328,17 @@ async function updateUI() {
         ui.rankingBtn.disabled = true;
         ui.guideBtn.disabled = true;
         
+        // 낚시 중에는 미끼 변경 불가
+        const baitBtn = document.getElementById('bait-btn');
+        if (baitBtn) baitBtn.disabled = true;
+
         if (currentState === GameState.CASTING) ui.castBtn.innerHTML = '<div class="btn-icon">✨</div><div class="btn-label">던지는 중...</div>';
         if (currentState === GameState.WAITING) ui.castBtn.innerHTML = '<div class="btn-icon">...</div><div class="btn-label">기다리는 중...</div>';
         
         // 낚시 중(던지기, 대기, 릴링)에는 릴링 버튼 표시 (대기 중엔 흰색, 히트 시 빨간색)
         ui.reelBtn.classList.remove('hidden');
 
-        if (currentState === GameState.REELING) {
+        if (currentState === GameState.REELING || currentState === GameState.HOOKING) {
             ui.castBtn.classList.add('hidden'); // 낚시하기 버튼 숨기기
             ui.reelBtn.classList.add('hit'); // 빨간색 활성화 (Hit!)
             ui.reelingOverlay.classList.remove('hidden');
@@ -294,7 +363,7 @@ function updateLinePosition(visible, bobberX, bobberY) {
     // 낚싯대 끝 위치 (대략적인 고정값, 화면 크기에 따라 조정 필요할 수 있음)
     // .boat-container가 중앙 하단에 있으므로 그 근처 좌표
     const rodTipX = "50%"; 
-    const rodTipY = "70%"; // 배 위쪽
+    const rodTipY = "50%"; // 배 위쪽
 
     // SVG line은 % 단위를 직접 쓰기 어려우므로 JS로 계산하거나, 
     // 간단하게 CSS로 처리하기 위해 HTML 구조상 고정 좌표를 사용합니다.
@@ -312,6 +381,15 @@ function updateLinePosition(visible, bobberX, bobberY) {
 
 async function handleCast() {
     if (currentState !== GameState.IDLE) return;
+
+    // 미끼 확인
+    const currentBaitCount = playerStats.baits[playerStats.selectedBait];
+    if (currentBaitCount <= 0 && currentBaitCount !== Infinity) {
+        alert("선택한 미끼가 다 떨어졌습니다! 기본 미끼(떡밥)로 변경합니다.");
+        playerStats.selectedBait = "paste";
+        updateUI();
+        return;
+    }
 
     // 1. 캐스팅 (Casting)
     currentState = GameState.CASTING;
@@ -351,48 +429,140 @@ async function handleCast() {
     updateUI();
 
     // 랜덤 대기 시간 (2~4초)
-    await wait(2000 + Math.random() * 2000);
+    const waitTime = 2000 + Math.random() * 3000;
+    await wait(waitTime);
 
-    // 3. 입질 및 릴링 (Reeling)
-    currentState = GameState.REELING;
-    ui.mainMessage.textContent = "히트!! 무언가 물었습니다!";
-    ui.subMessage.textContent = "릴 감기 버튼을 연타하세요!";
+    // 기다리는 도중 상태가 변했다면(유저가 미리 클릭해서 실패 등) 중단
+    if (currentState !== GameState.WAITING) return;
+
+    // 3. 챔질 단계 (Hooking) 시작
+    startHookingPhase();
+}
+
+function startHookingPhase() {
+    currentState = GameState.HOOKING;
     
-    // 찌 흔들림 효과
-    ui.bobber.style.animation = "bobber-bite 0.5s infinite";
+    // 미끼 소모 (입질이 왔을 때 소모)
+    if (playerStats.baits[playerStats.selectedBait] !== Infinity) {
+        playerStats.baits[playerStats.selectedBait]--;
+        // 개수가 0이 되면 UI 업데이트를 위해 저장
+        if (playerStats.baits[playerStats.selectedBait] < 0) playerStats.baits[playerStats.selectedBait] = 0;
+        savePlayerData(playerStats);
+    }
+    updateUI(); // 미끼 개수 갱신
+
+    // 물고기 미리 결정 (등급에 따른 챔질 시간 설정을 위해)
+    playerStats.targetFish = catchRandomFish();
     
+    // 희귀도에 따른 챔질 허용 시간 (반응 속도)
+    let hookWindow = 1000; // 기본 1초
+    const rarity = playerStats.targetFish.rarity;
+    
+    if (rarity === 'Common') hookWindow = 1200;
+    else if (rarity === 'Uncommon') hookWindow = 1000;
+    else if (rarity === 'Rare') hookWindow = 800;
+    else if (rarity === 'Epic') hookWindow = 650;
+    else if (rarity === 'Legendary') hookWindow = 500;
+    else if (rarity === 'Mythical') hookWindow = 400; // 0.4초 안에 반응해야 함
+
+    // 시각/청각 효과
+    ui.mainMessage.textContent = "!!!";
+    ui.subMessage.textContent = "지금 당기세요!! (터치)";
+    ui.mainMessage.style.color = "#ef4444";
+    ui.bobber.style.animation = "bobber-bite 0.2s infinite"; // 격렬하게 흔들림
     updateUI();
 
-    // 미니게임 시작
-    startReelingGame();
+    // 진동 피드백 (강한 진동)
+    if (navigator.vibrate) navigator.vibrate(200);
+
+    // 시간 초과 체크 (너무 늦음)
+    if (playerStats.hookTimer) clearTimeout(playerStats.hookTimer);
+    playerStats.hookTimer = setTimeout(() => {
+        if (currentState === GameState.HOOKING) {
+            handleHookFail("late");
+        }
+    }, hookWindow);
+}
+
+function handleHookFail(reason) {
+    currentState = GameState.IDLE;
+    ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite";
+    ui.mainMessage.style.color = "white";
+    
+    if (reason === "early") {
+        ui.mainMessage.textContent = "너무 빨랐습니다!";
+        ui.subMessage.textContent = "물고기가 놀라서 도망갔네요.";
+    } else {
+        ui.mainMessage.textContent = "놓쳤습니다...";
+        ui.subMessage.textContent = "반응이 너무 늦었어요.";
+    }
+    
+    updateUI();
 }
 
 // --- 릴링 미니게임 로직 ---
 
 function startReelingGame() {
-    // 잡힐 물고기 미리 결정
-    playerStats.targetFish = catchRandomFish();
+    // 물고기는 startHookingPhase에서 이미 결정됨
+    if (!playerStats.targetFish) playerStats.targetFish = catchRandomFish();
+
     playerStats.reelingProgress = 30; // 시작 게이지 30%
+    playerStats.isThrashing = false;
+    playerStats.thrashTimer = 0;
     
     // 물고기 등급에 따른 난이도 설정
-    let drainRate = 0.5; // 기본 감소율
+    let baseDrain = 0.8; // 기본 감소율 상향 (기존 0.5)
     const rarity = playerStats.targetFish.rarity;
+    let thrashChance = 0.02; // 틱당 저항 확률 (2%)
     
-    if (rarity === 'Uncommon') drainRate = 0.8;
-    if (rarity === 'Rare') drainRate = 1.2;
-    if (rarity === 'Epic') drainRate = 1.8;
-    if (rarity === 'Legendary') drainRate = 2.5;
-    if (rarity === 'Mythical') drainRate = 3.5;
+    if (rarity === 'Uncommon') { baseDrain = 1.2; thrashChance = 0.04; }
+    if (rarity === 'Rare') { baseDrain = 1.8; thrashChance = 0.06; }
+    if (rarity === 'Epic') { baseDrain = 2.5; thrashChance = 0.08; }
+    if (rarity === 'Legendary') { baseDrain = 3.5; thrashChance = 0.12; }
+    if (rarity === 'Mythical') { baseDrain = 5.0; thrashChance = 0.15; }
 
     // 낚싯줄 레벨이 높으면 감소율 완화
-    drainRate = Math.max(0.1, drainRate - (playerStats.lineLevel * 0.1));
+    baseDrain = Math.max(0.3, baseDrain - (playerStats.lineLevel * 0.15));
 
     // 게임 루프
     if (playerStats.reelingInterval) clearInterval(playerStats.reelingInterval);
     
     playerStats.reelingInterval = setInterval(() => {
-        // 게이지 자연 감소 (물고기 저항)
-        playerStats.reelingProgress -= drainRate;
+        // 1. 저항(Thrashing) 상태 관리
+        if (playerStats.isThrashing) {
+            playerStats.thrashTimer--;
+            if (playerStats.thrashTimer <= 0) {
+                playerStats.isThrashing = false;
+                ui.reelingBar.style.filter = "none"; // 시각 효과 해제
+            }
+        } else {
+            // 랜덤하게 저항 상태 진입
+            if (Math.random() < thrashChance) {
+                playerStats.isThrashing = true;
+                playerStats.thrashTimer = 20 + Math.random() * 30; // 1~2.5초간 지속
+                
+                // 저항 시작 시 강한 진동 (손맛)
+                if (navigator.vibrate) navigator.vibrate(200);
+                
+                // 시각적 효과
+                ui.mainMessage.textContent = "물고기가 저항합니다!!";
+                ui.mainMessage.style.color = "#ef4444";
+            } else {
+                ui.mainMessage.style.color = "white";
+            }
+        }
+
+        // 2. 게이지 감소 계산
+        let currentDrain = baseDrain;
+        
+        if (playerStats.isThrashing) {
+            // 저항 중일 때는 감소량이 2.5배
+            currentDrain *= 2.5;
+            // 찌가 미친듯이 흔들림
+            ui.bobber.style.transform = `translate(${Math.random()*10 - 5}px, ${Math.random()*10 - 5}px)`;
+        }
+
+        playerStats.reelingProgress -= currentDrain;
         updateReelingUI();
 
         // 실패 조건
@@ -407,15 +577,47 @@ function startReelingGame() {
 }
 
 function handleReelClick() {
+    // 1. 대기 중 클릭 (너무 빠름 - 실패)
+    if (currentState === GameState.WAITING) {
+        handleHookFail("early");
+        return;
+    }
+
+    // 2. 챔질 타이밍 클릭 (성공)
+    if (currentState === GameState.HOOKING) {
+        if (playerStats.hookTimer) clearTimeout(playerStats.hookTimer);
+        
+        // 릴링 상태로 전환
+        currentState = GameState.REELING;
+        ui.mainMessage.textContent = "히트!! 무언가 물었습니다!";
+        ui.subMessage.textContent = "릴 감기 버튼을 연타하세요!";
+        ui.mainMessage.style.color = "white";
+        ui.bobber.style.animation = "bobber-bite 0.5s infinite";
+        
+        updateUI();
+        startReelingGame();
+        return;
+    }
+
     if (currentState !== GameState.REELING) return;
 
+    // 릴 감을 때 약한 진동 (기계적인 느낌)
+    if (navigator.vibrate) navigator.vibrate(15);
+
     // 낚싯대 레벨에 따른 게이지 증가량
-    const reelPower = 3 + (playerStats.rodLevel * 0.5);
-    playerStats.reelingProgress += reelPower;
+    let reelPower = 4 + (playerStats.rodLevel * 0.6);
+
+    // 물고기가 저항 중일 때는 릴 감는 효율이 50%로 감소 (당기는 힘 구현)
+    if (playerStats.isThrashing) {
+        reelPower *= 0.5;
+        // 저항 중 클릭 시 찌가 더 크게 튐
+        ui.bobber.style.top = (parseFloat(ui.bobber.style.top) + 2) + '%';
+    } else {
+        // 평소에는 찌가 당겨짐
+        ui.bobber.style.top = (parseFloat(ui.bobber.style.top) + 1) + '%';
+    }
     
-    // 시각적 효과 (찌가 당겨짐)
-    const currentTop = parseFloat(ui.bobber.style.top);
-    ui.bobber.style.top = (currentTop + 1) + '%'; // 약간 움직임
+    playerStats.reelingProgress += reelPower;
     
     updateReelingUI();
 }
@@ -427,8 +629,14 @@ function updateReelingUI() {
     
     // 색상 변경 (위험하면 빨강)
     if (progress < 30) ui.reelingBar.style.backgroundColor = '#ef4444';
-    else if (progress > 70) ui.reelingBar.style.backgroundColor = '#22c55e';
+    else if (progress > 80) ui.reelingBar.style.backgroundColor = '#22c55e';
     else ui.reelingBar.style.backgroundColor = '#eab308';
+
+    // 저항 중일 때 바 색상 깜빡임 효과
+    if (playerStats.isThrashing) {
+        const isRed = Math.floor(Date.now() / 100) % 2 === 0;
+        ui.reelingBar.style.backgroundColor = isRed ? '#ef4444' : '#ffffff';
+    }
 
     // 남은 거리 표시 (역으로 계산)
     const distance = Math.floor(100 - progress);
@@ -438,6 +646,7 @@ function updateReelingUI() {
 async function endReeling(isSuccess) {
     clearInterval(playerStats.reelingInterval);
     ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite"; // 애니메이션 복구
+    ui.mainMessage.style.color = "white"; // 메시지 색상 복구
 
     if (isSuccess) {
         // 물고기 잡음
@@ -534,18 +743,8 @@ function catchRandomFish() {
     // 희귀도 가중치 기반 랜덤 선택
     let selectedRarity = "Common";
 
-    // 낚싯대 레벨에 따른 잡을 수 있는 최대 희귀도 제한 (Hard Gate)
-    // Lv.1: Common, Uncommon
-    // Lv.2: + Rare
-    // Lv.3: + Epic
-    // Lv.4: + Legendary, Mythical
-    const allowedRarities = new Set(["Common", "Uncommon"]);
-    if (playerStats.rodLevel >= 2) allowedRarities.add("Rare");
-    if (playerStats.rodLevel >= 3) allowedRarities.add("Epic");
-    if (playerStats.rodLevel >= 4) {
-        allowedRarities.add("Legendary");
-        allowedRarities.add("Mythical");
-    }
+    // 미끼에 따른 잡을 수 있는 희귀도 목록 가져오기
+    const allowedRarities = new Set(BAIT_TYPES[playerStats.selectedBait].rarities);
 
     // 허용된 희귀도 내에서 가중치 계산
     let totalWeight = 0;
@@ -620,6 +819,24 @@ function updateShopUI() {
         ui.upgradeRodBtn.textContent = "최고 레벨";
     }
 
+    // 미끼 상점 UI 추가 (기존 요소 뒤에 추가)
+    let baitSection = document.getElementById('bait-shop-section');
+    if (!baitSection) {
+        baitSection = document.createElement('div');
+        baitSection.id = 'bait-shop-section';
+        baitSection.className = 'shop-item';
+        baitSection.innerHTML = `<h3>🦐 미끼 구매 (10개 묶음)</h3><div class="bait-shop-grid" id="bait-shop-grid"></div>`;
+        // 낚싯줄 섹션 뒤에 삽입
+        ui.lineInfo.parentElement.parentElement.after(baitSection);
+    }
+
+    const baitGrid = document.getElementById('bait-shop-grid');
+    baitGrid.innerHTML = Object.entries(BAIT_TYPES).map(([key, bait]) => {
+        if (bait.price === 0) return ''; // 기본 미끼는 판매 안 함
+        const canBuy = playerStats.gold >= bait.price;
+        return `<button class="btn secondary-btn" onclick="buyBait('${key}')" ${canBuy ? '' : 'disabled'} style="font-size:0.8rem; height:auto; padding:10px;">${bait.emoji} ${bait.name}<br><span style="color:#fbbf24">${bait.price}G</span></button>`;
+    }).join('');
+
     // 낚싯줄 UI
     const currentLine = LINE_UPGRADES[playerStats.lineLevel - 1];
     const nextLine = LINE_UPGRADES[playerStats.lineLevel];
@@ -657,6 +874,20 @@ function buyUpgrade(type) {
             savePlayerData(playerStats); // 데이터 저장
             updateUI();
         }
+    }
+}
+
+function buyBait(type) {
+    const bait = BAIT_TYPES[type];
+    if (playerStats.gold >= bait.price) {
+        playerStats.gold -= bait.price;
+        if (!playerStats.baits[type]) playerStats.baits[type] = 0;
+        playerStats.baits[type] += 10; // 10개씩 구매
+        
+        alert(`${bait.name} 10개를 구매했습니다!`);
+        updateShopUI();
+        updateUI();
+        savePlayerData(playerStats);
     }
 }
 
@@ -861,6 +1092,8 @@ function renderEquipmentGuide() {
     });
     guideBody.appendChild(lineList);
 }
+
+window.buyBait = buyBait; // HTML onclick에서 접근 가능하도록 전역 노출
 
 // --- 1. 릴링 버튼 드래그 기능 ---
 function makeReelButtonDraggable(element) {
