@@ -35,66 +35,66 @@ const CONGRATS_PHRASES = {
 // 물고기 데이터베이스 확장
 const FISH_DATABASE = [
     // Common (흔함)
-    { name: "고등어", rarity: "Common", price: 100, emoji: "🐟" },
-    { name: "멸치", rarity: "Common", price: 50, emoji: "🐟" },
-    { name: "송어", rarity: "Common", price: 120, emoji: "🐟" },
-    { name: "붕어", rarity: "Common", price: 80, emoji: "🐟" },
-    { name: "망둥어", rarity: "Common", price: 60, emoji: "🐟" },
-    { name: "전어", rarity: "Common", price: 110, emoji: "🐟" },
-    { name: "꽁치", rarity: "Common", price: 90, emoji: "🐟" },
-    { name: "정어리", rarity: "Common", price: 70, emoji: "🐟" },
-    { name: "빙어", rarity: "Common", price: 40, emoji: "🐟" },
-    { name: "피라미", rarity: "Common", price: 30, emoji: "🐟" },
+    { name: "고등어", rarity: "Common", price: 100, exp: 10, emoji: "🐟" },
+    { name: "멸치", rarity: "Common", price: 50, exp: 5, emoji: "🐟" },
+    { name: "송어", rarity: "Common", price: 120, exp: 12, emoji: "🐟" },
+    { name: "붕어", rarity: "Common", price: 80, exp: 8, emoji: "🎏" },
+    { name: "망둥어", rarity: "Common", price: 60, exp: 6, emoji: "🦎" },
+    { name: "전어", rarity: "Common", price: 110, exp: 11, emoji: "🐟" },
+    { name: "꽁치", rarity: "Common", price: 90, exp: 9, emoji: "🐟" },
+    { name: "정어리", rarity: "Common", price: 70, exp: 7, emoji: "🐟" },
+    { name: "빙어", rarity: "Common", price: 40, exp: 4, emoji: "🐟" },
+    { name: "피라미", rarity: "Common", price: 30, exp: 3, emoji: "🐟" },
     
     // Uncommon (드묾)
-    { name: "광어", rarity: "Uncommon", price: 300, emoji: "🐠" },
-    { name: "우럭", rarity: "Uncommon", price: 350, emoji: "🐠" },
-    { name: "오징어", rarity: "Uncommon", price: 400, emoji: "🦑" },
-    { name: "문어", rarity: "Uncommon", price: 450, emoji: "🐙" },
-    { name: "연어", rarity: "Uncommon", price: 500, emoji: "🐠" },
-    { name: "삼치", rarity: "Uncommon", price: 320, emoji: "🐠" },
-    { name: "농어", rarity: "Uncommon", price: 380, emoji: "🐠" },
-    { name: "도다리", rarity: "Uncommon", price: 310, emoji: "🐠" },
-    { name: "쥐치", rarity: "Uncommon", price: 280, emoji: "🐠" },
-    { name: "가자미", rarity: "Uncommon", price: 290, emoji: "🐠" },
-    { name: "쭈꾸미", rarity: "Uncommon", price: 420, emoji: "🐙" },
+    { name: "광어", rarity: "Uncommon", price: 300, exp: 30, emoji: "🐠" },
+    { name: "우럭", rarity: "Uncommon", price: 350, exp: 35, emoji: "🐟" },
+    { name: "오징어", rarity: "Uncommon", price: 400, exp: 40, emoji: "🦑" },
+    { name: "문어", rarity: "Uncommon", price: 450, exp: 45, emoji: "🐙" },
+    { name: "연어", rarity: "Uncommon", price: 500, exp: 50, emoji: "🍣" },
+    { name: "삼치", rarity: "Uncommon", price: 320, exp: 32, emoji: "🦈" },
+    { name: "농어", rarity: "Uncommon", price: 380, exp: 38, emoji: "🐟" },
+    { name: "도다리", rarity: "Uncommon", price: 310, exp: 31, emoji: "🐠" },
+    { name: "쥐치", rarity: "Uncommon", price: 280, exp: 28, emoji: "🐠" },
+    { name: "가자미", rarity: "Uncommon", price: 290, exp: 29, emoji: "🐠" },
+    { name: "쭈꾸미", rarity: "Uncommon", price: 420, exp: 42, emoji: "🐙" },
 
     // Rare (희귀)
-    { name: "참돔", rarity: "Rare", price: 1000, emoji: "🐡" },
-    { name: "돌돔", rarity: "Rare", price: 1200, emoji: "🐡" },
-    { name: "복어", rarity: "Rare", price: 1500, emoji: "🐡" },
-    { name: "아귀", rarity: "Rare", price: 1300, emoji: "🐡" },
-    { name: "쏘가리", rarity: "Rare", price: 1100, emoji: "🐡" },
-    { name: "장어", rarity: "Rare", price: 1400, emoji: "🐍" },
-    { name: "민어", rarity: "Rare", price: 1600, emoji: "🐡" },
-    { name: "방어", rarity: "Rare", price: 1250, emoji: "🐡" },
-    { name: "감성돔", rarity: "Rare", price: 1150, emoji: "🐡" },
-    { name: "랍스터", rarity: "Rare", price: 1800, emoji: "🦞" },
+    { name: "참돔", rarity: "Rare", price: 1000, exp: 100, emoji: "🐡" },
+    { name: "돌돔", rarity: "Rare", price: 1200, exp: 120, emoji: "🐡" },
+    { name: "복어", rarity: "Rare", price: 1500, exp: 150, emoji: "🐡" },
+    { name: "아귀", rarity: "Rare", price: 1300, exp: 130, emoji: "🐠" },
+    { name: "쏘가리", rarity: "Rare", price: 1100, exp: 110, emoji: "🐟" },
+    { name: "장어", rarity: "Rare", price: 1400, exp: 140, emoji: "🐍" },
+    { name: "민어", rarity: "Rare", price: 1600, exp: 160, emoji: "🐡" },
+    { name: "방어", rarity: "Rare", price: 1250, exp: 125, emoji: "🐡" },
+    { name: "감성돔", rarity: "Rare", price: 1150, exp: 115, emoji: "🐡" },
+    { name: "랍스터", rarity: "Rare", price: 1800, exp: 180, emoji: "🦞" },
 
     // Epic (영웅)
-    { name: "다금바리", rarity: "Epic", price: 5000, emoji: "🦈" },
-    { name: "참치", rarity: "Epic", price: 6000, emoji: "🐟" },
-    { name: "킹크랩", rarity: "Epic", price: 5500, emoji: "🦀" },
-    { name: "돗돔", rarity: "Epic", price: 5200, emoji: "🦈" },
-    { name: "붉은바다거북", rarity: "Epic", price: 5800, emoji: "🐢" },
-    { name: "대왕문어", rarity: "Epic", price: 5300, emoji: "🐙" },
-    { name: "철갑상어", rarity: "Epic", price: 6500, emoji: "🦈" },
-    { name: "돛새치", rarity: "Epic", price: 6200, emoji: "🦈" },
+    { name: "다금바리", rarity: "Epic", price: 5000, exp: 500, emoji: "🦈" },
+    { name: "참치", rarity: "Epic", price: 6000, exp: 600, emoji: "🐟" },
+    { name: "킹크랩", rarity: "Epic", price: 5500, exp: 550, emoji: "🦀" },
+    { name: "돗돔", rarity: "Epic", price: 5200, exp: 520, emoji: "🦈" },
+    { name: "붉은바다거북", rarity: "Epic", price: 5800, exp: 580, emoji: "🐢" },
+    { name: "대왕문어", rarity: "Epic", price: 5300, exp: 530, emoji: "🐙" },
+    { name: "철갑상어", rarity: "Epic", price: 6500, exp: 650, emoji: "🦈" },
+    { name: "돛새치", rarity: "Epic", price: 6200, exp: 620, emoji: "🦈" },
 
     // Legendary (전설)
-    { name: "청새치", rarity: "Legendary", price: 20000, emoji: "🐋" },
-    { name: "백상아리", rarity: "Legendary", price: 25000, emoji: "🦈" },
-    { name: "황금잉어", rarity: "Legendary", price: 30000, emoji: "👑" },
-    { name: "범고래", rarity: "Legendary", price: 28000, emoji: "🐋" },
-    { name: "대왕오징어", rarity: "Legendary", price: 22000, emoji: "🦑" },
-    { name: "실러캔스", rarity: "Legendary", price: 35000, emoji: "🐟" },
-    { name: "개복치", rarity: "Legendary", price: 21000, emoji: "🐠" },
+    { name: "청새치", rarity: "Legendary", price: 20000, exp: 2000, emoji: "🐋" },
+    { name: "백상아리", rarity: "Legendary", price: 25000, exp: 2500, emoji: "🦈" },
+    { name: "황금잉어", rarity: "Legendary", price: 30000, exp: 3000, emoji: "🎏" },
+    { name: "범고래", rarity: "Legendary", price: 28000, exp: 2800, emoji: "🐋" },
+    { name: "대왕오징어", rarity: "Legendary", price: 22000, exp: 2200, emoji: "🦑" },
+    { name: "실러캔스", rarity: "Legendary", price: 35000, exp: 3500, emoji: "🦕" },
+    { name: "개복치", rarity: "Legendary", price: 21000, exp: 2100, emoji: "🐠" },
 
     // Mythical (신화)
-    { name: "크라켄", rarity: "Mythical", price: 99999, emoji: "🦑" },
-    { name: "리바이어던", rarity: "Mythical", price: 150000, emoji: "🐉" },
-    { name: "모비딕", rarity: "Mythical", price: 120000, emoji: "🐋" },
-    { name: "히드라", rarity: "Mythical", price: 130000, emoji: "🐍" }
+    { name: "크라켄", rarity: "Mythical", price: 99999, exp: 10000, emoji: "🦑" },
+    { name: "리바이어던", rarity: "Mythical", price: 150000, exp: 15000, emoji: "🐉" },
+    { name: "모비딕", rarity: "Mythical", price: 120000, exp: 12000, emoji: "🐋" },
+    { name: "히드라", rarity: "Mythical", price: 130000, exp: 13000, emoji: "🐍" }
 ];
 
 const RARITY_WEIGHTS = {
@@ -154,6 +154,7 @@ const ui = {
     shopBtn: document.getElementById('shop-btn'),
     inventoryBtn: document.getElementById('inventory-btn'),
     rankingBtn: document.getElementById('ranking-btn'),
+    guideBtn: document.getElementById('guide-btn'),
     rankingModal: document.getElementById('ranking-modal'),
     closeRankingBtn: document.getElementById('close-ranking'),
     shopModal: document.getElementById('shop-modal'),
@@ -175,22 +176,28 @@ const ui = {
     
     // 획득 모달 요소
     catchModal: document.getElementById('catch-modal'),
+    catchTitle: document.getElementById('catch-title'),
     catchEmoji: document.getElementById('catch-emoji'),
     catchName: document.getElementById('catch-name'),
     catchRarity: document.getElementById('catch-rarity'),
     catchPrice: document.getElementById('catch-price'),
-    catchCloseBtn: document.getElementById('catch-close-btn')
+    catchCloseBtn: document.getElementById('catch-close-btn'),
+
+    // 도감 요소
+    guideModal: document.getElementById('guide-modal'),
+    closeGuideBtn: document.getElementById('close-guide')
 };
 
 // --- 게임 로직 (Game Logic) ---
 
 function startGameWithProfile(profile) {
     // Supabase에서 불러온 데이터로 playerStats 초기화
-    playerStats.gold = profile.gold || 0;
-    playerStats.level = profile.level || 1;
-    playerStats.exp = profile.exp || 0;
-    playerStats.rodLevel = profile.rod_level || 1;
-    playerStats.lineLevel = profile.line_level || 1;
+    // 데이터베이스에서 숫자가 문자열로 올 경우를 대비해 Number()로 변환
+    playerStats.gold = Number(profile.gold) || 0;
+    playerStats.level = Number(profile.level) || 1;
+    playerStats.exp = Number(profile.exp) || 0;
+    playerStats.rodLevel = Number(profile.rod_level) || 1;
+    playerStats.lineLevel = Number(profile.line_level) || 1;
     playerStats.inventory = profile.inventory || [];
     
     // 게임 초기화
@@ -201,18 +208,33 @@ function startGameWithProfile(profile) {
 
 function addEventListeners() {
     
-    // 이벤트 리스너 등록
     ui.castBtn.addEventListener('click', handleCast);
-    ui.reelBtn.addEventListener('click', handleReelClick);
     ui.shopBtn.addEventListener('click', openShop);
     ui.inventoryBtn.addEventListener('click', openInventory);
     ui.rankingBtn.addEventListener('click', openRanking);
+    ui.guideBtn.addEventListener('click', openGuide);
     ui.closeRankingBtn.addEventListener('click', closeRanking);
     ui.closeShopBtn.addEventListener('click', closeShop);
     ui.closeInventoryBtn.addEventListener('click', closeInventory);
     ui.upgradeRodBtn.addEventListener('click', () => buyUpgrade('rod'));
     ui.upgradeLineBtn.addEventListener('click', () => buyUpgrade('line'));
     ui.catchCloseBtn.addEventListener('click', closeCatchModal);
+    ui.closeGuideBtn.addEventListener('click', closeGuide);
+
+    // 1. 릴링 버튼을 드래그 가능하게 만듦
+    makeReelButtonDraggable(ui.reelBtn);
+
+    // 4. 자동 저장 기능: 페이지가 백그라운드로 전환되거나 닫힐 때 데이터 저장
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            // 사용자가 로그인한 상태인지 확인 (프로필 UI가 보이는지로 판단)
+            const userProfileEl = document.getElementById('user-profile');
+            if (userProfileEl && !userProfileEl.classList.contains('hidden')) {
+                console.log("페이지가 숨겨져 데이터 자동 저장...");
+                savePlayerData(playerStats);
+            }
+        }
+    });
 }
 
 async function updateUI() {
@@ -223,13 +245,14 @@ async function updateUI() {
     // 버튼 상태 업데이트
     if (currentState === GameState.IDLE) {
         ui.castBtn.disabled = false;
-        ui.castBtn.textContent = "🎣 낚시하기";
+        ui.castBtn.innerHTML = '<div class="btn-icon">✨</div><div class="btn-label">낚시하기</div>';
         ui.shopBtn.disabled = false;
         ui.inventoryBtn.disabled = false;
         ui.rankingBtn.disabled = false;
+        ui.guideBtn.disabled = false;
         
         ui.castBtn.classList.remove('hidden');
-        ui.reelBtn.classList.add('hidden');
+        ui.reelBtn.classList.add('hidden'); // 플로팅 버튼 숨기기
         ui.reelingOverlay.classList.add('hidden');
         ui.bobber.classList.add('hidden');
         updateLinePosition(false); // 줄 숨기기
@@ -238,13 +261,20 @@ async function updateUI() {
         ui.shopBtn.disabled = true;
         ui.inventoryBtn.disabled = true;
         ui.rankingBtn.disabled = true;
+        ui.guideBtn.disabled = true;
         
-        if (currentState === GameState.CASTING) ui.castBtn.textContent = "던지는 중...";
-        if (currentState === GameState.WAITING) ui.castBtn.textContent = "기다리는 중...";
+        if (currentState === GameState.CASTING) ui.castBtn.innerHTML = '<div class="btn-icon">✨</div><div class="btn-label">던지는 중...</div>';
+        if (currentState === GameState.WAITING) ui.castBtn.innerHTML = '<div class="btn-icon">...</div><div class="btn-label">기다리는 중...</div>';
+        
+        // 낚시 중(던지기, 대기, 릴링)에는 릴링 버튼 표시 (대기 중엔 흰색, 히트 시 빨간색)
+        ui.reelBtn.classList.remove('hidden');
+
         if (currentState === GameState.REELING) {
-            ui.castBtn.classList.add('hidden');
-            ui.reelBtn.classList.remove('hidden');
+            ui.castBtn.classList.add('hidden'); // 낚시하기 버튼 숨기기
+            ui.reelBtn.classList.add('hit'); // 빨간색 활성화 (Hit!)
             ui.reelingOverlay.classList.remove('hidden');
+        } else {
+            ui.reelBtn.classList.remove('hit'); // 흰색 대기 상태
         }
     }
 }
@@ -405,7 +435,7 @@ function updateReelingUI() {
     ui.fishDistance.textContent = distance;
 }
 
-function endReeling(isSuccess) {
+async function endReeling(isSuccess) {
     clearInterval(playerStats.reelingInterval);
     ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite"; // 애니메이션 복구
 
@@ -414,14 +444,18 @@ function endReeling(isSuccess) {
         const caughtFish = playerStats.targetFish;
         
         // 보상 지급
-        playerStats.exp += 10;
+        playerStats.exp += (caughtFish.exp || 10);
+        // 즉시 골드 획득으로 변경
+        playerStats.gold += caughtFish.price;
+        
         addToInventory(caughtFish);
         
+        let leveledUp = false;
         // 레벨업 체크
         if (playerStats.exp >= playerStats.level * 100) {
             playerStats.level++;
             playerStats.exp = 0;
-            alert("레벨 업! 더 좋은 낚시꾼이 되었습니다.");
+            leveledUp = true;
         }
 
         // 코멘트 생성
@@ -429,13 +463,17 @@ function endReeling(isSuccess) {
         const comment = phrases[Math.floor(Math.random() * phrases.length)];
 
         ui.mainMessage.textContent = `${caughtFish.name}을(를) 잡았습니다!`;
-        ui.subMessage.textContent = `${comment} (가방에 보관됨)`;
+        ui.subMessage.textContent = `${comment} (즉시 ${caughtFish.price.toLocaleString()} G 획득!)`;
         
         // 획득 팝업 표시
         showCatchModal(caughtFish);
 
-        // 데이터 저장
-        savePlayerData(playerStats);
+        // 데이터 저장 (Alert 뜨기 전에 저장!)
+        await savePlayerData(playerStats);
+
+        if (leveledUp) {
+            setTimeout(() => alert("🎉 레벨 업! 더 좋은 낚시꾼이 되었습니다."), 100);
+        }
     } else {
         // 실패
         ui.mainMessage.textContent = "놓쳤습니다...";
@@ -448,6 +486,10 @@ function endReeling(isSuccess) {
 }
 
 function showCatchModal(fish) {
+    // 문구 랜덤 변경
+    const titles = ["🎉 월척이다!", "🎣 나이스 캐치!", "✨ 대박!", "🌊 바다의 선물!", "🐟 잡았다!"];
+    ui.catchTitle.textContent = titles[Math.floor(Math.random() * titles.length)];
+
     ui.catchEmoji.textContent = fish.emoji;
     ui.catchName.textContent = fish.name;
     ui.catchRarity.textContent = fish.rarity;
@@ -465,7 +507,23 @@ function showCatchModal(fish) {
     ui.catchRarity.style.color = colors[fish.rarity] || "white";
     ui.catchRarity.style.borderColor = colors[fish.rarity] || "white";
     
+    // 3. 확인 버튼 오클릭 방지
+    ui.catchCloseBtn.disabled = true;
+    setTimeout(() => {
+        ui.catchCloseBtn.disabled = false;
+    }, 1000); // 1초 후 버튼 활성화
+
     ui.catchModal.classList.remove('hidden');
+
+    // 폭죽 효과 (Confetti)
+    if (typeof confetti === 'function') {
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            zIndex: 1000 // 모달 위에 표시되도록 설정
+        });
+    }
 }
 
 function closeCatchModal() {
@@ -474,18 +532,37 @@ function closeCatchModal() {
 
 function catchRandomFish() {
     // 희귀도 가중치 기반 랜덤 선택
-    const rand = Math.random() * 100;
-    let cumulativeWeight = 0;
     let selectedRarity = "Common";
 
-    // 장비 레벨 보너스 (희귀한 물고기 확률 약간 증가)
-    const bonus = (playerStats.rodLevel - 1) * 0.5;
+    // 낚싯대 레벨에 따른 잡을 수 있는 최대 희귀도 제한 (Hard Gate)
+    // Lv.1: Common, Uncommon
+    // Lv.2: + Rare
+    // Lv.3: + Epic
+    // Lv.4: + Legendary, Mythical
+    const allowedRarities = new Set(["Common", "Uncommon"]);
+    if (playerStats.rodLevel >= 2) allowedRarities.add("Rare");
+    if (playerStats.rodLevel >= 3) allowedRarities.add("Epic");
+    if (playerStats.rodLevel >= 4) {
+        allowedRarities.add("Legendary");
+        allowedRarities.add("Mythical");
+    }
+
+    // 허용된 희귀도 내에서 가중치 계산
+    let totalWeight = 0;
+    const activeWeights = {};
 
     for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
-        // 상위 등급일수록 보너스 적용 (Common 제외)
-        const adjustedWeight = rarity === 'Common' ? weight - bonus : weight + (bonus / 5);
-        
-        cumulativeWeight += adjustedWeight;
+        if (allowedRarities.has(rarity)) {
+            activeWeights[rarity] = weight;
+            totalWeight += weight;
+        }
+    }
+
+    const rand = Math.random() * totalWeight;
+    let cumulativeWeight = 0;
+
+    for (const [rarity, weight] of Object.entries(activeWeights)) {
+        cumulativeWeight += weight;
         if (rand <= cumulativeWeight) {
             selectedRarity = rarity;
             break;
@@ -510,9 +587,7 @@ function addToInventory(fish) {
             count: 1
         });
     }
-    // 잡자마자 골드 획득이 아니라 판매 시 획득으로 변경할 수도 있지만, 
-    // 게임 단순화를 위해 잡을 때 골드 획득 방식 유지하려면 아래 주석 해제
-    playerStats.gold += fish.price;
+    // 골드는 endReeling에서 즉시 획득함
 }
 
 // 게임 시작 함수는 auth.js에서 호출하므로 여기서는 삭제
@@ -598,7 +673,7 @@ function closeInventory() {
 
 function updateInventoryUI() {
     ui.inventoryList.innerHTML = '';
-    let totalValue = 0;
+    // 총 가치 계산 로직 제거
 
     if (playerStats.inventory.length === 0) {
         ui.inventoryList.innerHTML = '<div class="empty-msg">가방이 비었습니다.</div>';
@@ -621,10 +696,8 @@ function updateInventoryUI() {
                 </div>
             `;
             ui.inventoryList.appendChild(itemEl);
-            totalValue += item.price * item.count;
         });
     }
-    ui.inventoryTotal.textContent = totalValue.toLocaleString();
 }
 
 // --- 랭킹 로직 (Ranking Logic) ---
@@ -664,6 +737,204 @@ function updateRankingUI(data) {
         `;
         ui.rankingList.appendChild(itemEl);
     });
+}
+
+// --- 도감(가이드) 로직 ---
+
+function openGuide() {
+    ui.guideModal.classList.remove('hidden');
+    renderFishGuide(); // 기본적으로 물고기 탭 표시
+    
+    // 탭 이벤트 리스너 설정
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            if (tab.dataset.tab === 'fish') renderFishGuide();
+            else renderEquipmentGuide();
+        });
+    });
+}
+
+function closeGuide() {
+    ui.guideModal.classList.add('hidden');
+}
+
+function renderFishGuide() {
+    const guideBody = document.getElementById('guide-body');
+    guideBody.innerHTML = '';
+
+    const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical"];
+    const reqRod = {
+        "Common": "기본 낚싯대 (Lv.1)",
+        "Uncommon": "기본 낚싯대 (Lv.1)",
+        "Rare": "카본 낚싯대 (Lv.2)",
+        "Epic": "티타늄 낚싯대 (Lv.3)",
+        "Legendary": "황금 낚싯대 (Lv.4)",
+        "Mythical": "황금 낚싯대 (Lv.4)"
+    };
+
+    rarities.forEach(rarity => {
+        const fishes = FISH_DATABASE.filter(f => f.rarity === rarity);
+        if (fishes.length === 0) return;
+
+        const sectionTitle = document.createElement('div');
+        sectionTitle.className = 'guide-section-title';
+        sectionTitle.textContent = `${rarity} 등급 (필요: ${reqRod[rarity]})`;
+        guideBody.appendChild(sectionTitle);
+
+        const grid = document.createElement('div');
+        grid.className = 'guide-grid';
+
+        fishes.forEach(fish => {
+            const card = document.createElement('div');
+            card.className = `guide-card rarity-${rarity.toLowerCase()}`;
+            card.innerHTML = `
+                <div class="guide-emoji">${fish.emoji}</div>
+                <div class="guide-name">${fish.name}</div>
+                <div class="guide-stats">💰 ${fish.price.toLocaleString()} G<br>✨ ${fish.exp} EXP</div>
+            `;
+            grid.appendChild(card);
+        });
+        guideBody.appendChild(grid);
+    });
+}
+
+function renderEquipmentGuide() {
+    const guideBody = document.getElementById('guide-body');
+    guideBody.innerHTML = '';
+
+    // 낚싯대 섹션
+    const rodTitle = document.createElement('div');
+    rodTitle.className = 'guide-section-title';
+    rodTitle.textContent = '🎣 낚싯대 (희귀 물고기 잠금 해제)';
+    guideBody.appendChild(rodTitle);
+
+    const rodList = document.createElement('div');
+    rodList.className = 'equip-list';
+    
+    const rodEffects = [
+        "기본 물고기 획득 가능",
+        "희귀(Rare) 물고기 획득 가능",
+        "영웅(Epic) 물고기 획득 가능",
+        "전설/신화(Legendary/Mythical) 획득 가능"
+    ];
+
+    ROD_UPGRADES.forEach((rod, index) => {
+        const card = document.createElement('div');
+        card.className = 'guide-card equip-card';
+        card.innerHTML = `
+            <div class="guide-emoji">🎣</div>
+            <div style="flex:1">
+                <div class="guide-name">${rod.name} (Lv.${index + 1})</div>
+                <div class="guide-stats">비용: ${rod.cost === 0 ? '기본 지급' : rod.cost.toLocaleString() + ' G'}</div>
+                <div class="guide-req">${rodEffects[index] || '공격력 증가'}</div>
+            </div>
+        `;
+        rodList.appendChild(card);
+    });
+    guideBody.appendChild(rodList);
+
+    // 낚싯줄 섹션
+    const lineTitle = document.createElement('div');
+    lineTitle.className = 'guide-section-title';
+    lineTitle.textContent = '🧵 낚싯줄 (물고기 저항 감소)';
+    guideBody.appendChild(lineTitle);
+
+    const lineList = document.createElement('div');
+    lineList.className = 'equip-list';
+
+    LINE_UPGRADES.forEach((line, index) => {
+        const card = document.createElement('div');
+        card.className = 'guide-card equip-card';
+        card.innerHTML = `
+            <div class="guide-emoji">🧵</div>
+            <div style="flex:1">
+                <div class="guide-name">${line.name} (Lv.${index + 1})</div>
+                <div class="guide-stats">비용: ${line.cost === 0 ? '기본 지급' : line.cost.toLocaleString() + ' G'}</div>
+                <div class="guide-req">줄 끊어짐 방지 효과 ${index + 1}단계</div>
+            </div>
+        `;
+        lineList.appendChild(card);
+    });
+    guideBody.appendChild(lineList);
+}
+
+// --- 1. 릴링 버튼 드래그 기능 ---
+function makeReelButtonDraggable(element) {
+    let isDragging = false;
+    let hasDragged = false;
+    let startX, startY, initialLeft, initialTop;
+
+    const onDown = (e) => {
+        // 게임이 진행 중(던지기, 대기, 릴링)이면 드래그 허용
+        if (currentState === GameState.IDLE) return;
+
+        hasDragged = false;
+        isDragging = true;
+        
+        const touch = e.touches ? e.touches[0] : e;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        
+        initialLeft = element.offsetLeft;
+        initialTop = element.offsetTop;
+
+        element.style.transition = 'none'; // 드래그 중에는 애니메이션 효과 제거
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onUp);
+        document.addEventListener('touchend', onUp);
+    };
+
+    const onMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault(); // 모바일에서 스크롤 방지
+
+        const touch = e.touches ? e.touches[0] : e;
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+
+        // 일정 거리 이상 움직이면 '드래그'로 간주
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+            hasDragged = true;
+        }
+        
+        const gameContainer = document.querySelector('.game-container');
+        const containerRect = gameContainer.getBoundingClientRect();
+        
+        let newX = Math.max(0, Math.min(initialLeft + deltaX, containerRect.width - element.offsetWidth));
+        let newY = Math.max(0, Math.min(initialTop + deltaY, containerRect.height - element.offsetHeight));
+
+        element.style.left = `${newX}px`;
+        element.style.top = `${newY}px`;
+        element.style.bottom = 'auto';
+        element.style.right = 'auto';
+    };
+
+    const onUp = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        element.style.transition = ''; // 애니메이션 효과 복구
+
+        // 드래그하지 않았다면 '클릭'으로 처리
+        if (!hasDragged) {
+            handleReelClick(e);
+        }
+
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchend', onUp);
+    };
+
+    // 기존의 click 이벤트 대신 mousedown/touchstart로 로직 통합
+    element.addEventListener('mousedown', onDown);
+    element.addEventListener('touchstart', onDown, { passive: false });
 }
 
 // 유틸리티 함수

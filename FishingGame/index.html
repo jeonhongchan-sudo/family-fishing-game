@@ -15,6 +15,7 @@
             <div class="stats-bar">
                 <div class="stat">💰 <span id="gold">0</span> G</div>
                 <div class="stat">⭐ Lv.<span id="level">1</span></div>
+                <div id="save-indicator" class="stat save-status hidden">💾 저장 중...</div>
                 <div id="user-profile" class="stat hidden">
                     👤 <span id="username-display"></span>
                     <button id="logout-btn" class="logout-btn">로그아웃</button>
@@ -53,14 +54,29 @@
             <!-- 컨트롤 패널 -->
             <div class="controls">
                 <!-- 일반 상태 버튼 -->
-                <button id="cast-btn" class="btn primary-btn">🎣 낚시하기</button>
-                <!-- 릴링 상태 버튼 (숨김 처리됨) -->
-                <button id="reel-btn" class="btn danger-btn hidden">⚙️ 릴 감기! (연타)</button>
+                <button id="cast-btn" class="btn primary-btn">
+                    <div class="btn-icon">✨</div>
+                    <div class="btn-label">낚시하기</div>
+                </button>
                 
-                <button id="shop-btn" class="btn secondary-btn">상점 열기</button>
-                <button id="inventory-btn" class="btn secondary-btn">가방</button>
-                <button id="ranking-btn" class="btn secondary-btn">🏆 랭킹</button>
+                <button id="shop-btn" class="btn secondary-btn">
+                    <div class="btn-icon">🏪</div>
+                    <div class="btn-label">상점</div>
+                </button>
+                <button id="inventory-btn" class="btn secondary-btn">
+                    <div class="btn-icon">🎒</div>
+                    <div class="btn-label">가방</div>
+                </button>
+                <button id="ranking-btn" class="btn secondary-btn">
+                    <div class="btn-icon">🏆</div>
+                    <div class="btn-label">랭킹</div>
+                </button>
+                <button id="guide-btn" class="btn secondary-btn">
+                    <div class="btn-icon">📖</div>
+                    <div class="btn-label">도감</div>
+                </button>
             </div>
+            <button id="reel-btn" class="btn floating-reel-btn hidden">✊</button>
         </main>
 
         <!-- 상점 모달 -->
@@ -105,9 +121,6 @@
                 <div id="inventory-list" class="inventory-grid">
                     <!-- 자바스크립트로 아이템 추가됨 -->
                 </div>
-                <div class="inventory-footer">
-                    <p>총 가치: <span id="inventory-total">0</span> G</p>
-                </div>
             </div>
         </div>
 
@@ -122,6 +135,23 @@
                     <p id="catch-price">💰 100 G</p>
                 </div>
                 <button id="catch-close-btn" class="btn primary-btn">확인</button>
+            </div>
+        </div>
+
+        <!-- 도감(가이드) 모달 -->
+        <div id="guide-modal" class="modal hidden">
+            <div class="modal-content guide-content-wrapper">
+                <div class="modal-header">
+                    <h2>📖 낚시 도감</h2>
+                    <span class="close-btn" id="close-guide">&times;</span>
+                </div>
+                <div class="guide-tabs">
+                    <button class="tab-btn active" data-tab="fish">🐟 어종 정보</button>
+                    <button class="tab-btn" data-tab="equip">🎣 장비 정보</button>
+                </div>
+                <div id="guide-body" class="guide-body">
+                    <!-- 자바스크립트로 내용 채움 -->
+                </div>
             </div>
         </div>
 
@@ -151,6 +181,7 @@
     </div>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>
     <script src="auth.js"></script>
 </body>

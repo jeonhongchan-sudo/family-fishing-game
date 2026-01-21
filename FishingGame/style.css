@@ -26,6 +26,9 @@ body {
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    position: relative; /* 플로팅 버튼의 좌표 기준점 설정 (필수) */
+    /* 모바일 하단 안전 영역(Safe Area) 확보 */
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 header {
@@ -45,6 +48,17 @@ h1 {
     justify-content: space-around;
     font-weight: bold;
     color: #fbbf24; /* amber-400 */
+}
+
+.save-status {
+    font-size: 0.9rem;
+    color: #4ade80; /* green-400 */
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
 }
 
 .scene {
@@ -154,20 +168,39 @@ h1 {
 }
 
 .controls {
-    display: flex;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5개 버튼 균등 배치 */
+    gap: 6px;
+    width: 100%;
 }
 
 .btn {
-    flex: 1;
-    padding: 15px; /* 터치 영역 확대 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    height: auto;
+    min-height: 70px;
     border: none;
     border-radius: 8px;
     font-weight: bold;
-    font-size: 1rem; /* 글자 크기 확대 */
     cursor: pointer;
     transition: background-color 0.2s;
     touch-action: manipulation; /* 더블 탭 줌 방지 */
+}
+
+.btn-icon {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.btn-label {
+    font-size: 0.75rem;
+    font-weight: normal;
+    white-space: nowrap;
+    letter-spacing: -0.5px; /* 좁은 공간에 글자 맞춤 */
 }
 
 .primary-btn {
@@ -183,6 +216,42 @@ h1 {
     color: white;
 }
 .danger-btn:active { background-color: #dc2626; transform: scale(0.98); } /* 모바일 터치감 개선 */
+
+.floating-reel-btn {
+    position: absolute;
+    bottom: calc(100px + env(safe-area-inset-bottom)); /* 컨트롤 패널 위로 배치 */
+    right: 15px;
+    width: 70px;
+    height: 70px;
+    background-color: white;
+    color: #1e293b;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    font-size: 2.5rem;
+    z-index: 21; /* reeling-ui는 20 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    flex: none; /* .btn의 flex: 1 오버라이드 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    cursor: grab;
+    touch-action: none; /* 드래그 시 스크롤 등 브라우저 동작 방지 */
+}
+.floating-reel-btn:active { cursor: grabbing; }
+
+.floating-reel-btn.hit {
+    background-color: #ef4444; /* red-500 */
+    color: white;
+    border-color: #ef4444;
+    animation: pulse-red 0.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
 
 .secondary-btn {
     background-color: #475569; /* slate-600 */
@@ -248,8 +317,8 @@ h1 {
 
 /* Inventory Styles */
 .inventory-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     max-height: 300px;
     overflow-y: auto;
@@ -274,18 +343,9 @@ h1 {
 .inv-price { color: #fbbf24; font-size: 0.8rem; }
 
 .empty-msg {
-    grid-column: span 2;
     text-align: center;
     color: #64748b;
     padding: 20px;
-}
-
-.inventory-footer {
-    text-align: right;
-    font-weight: bold;
-    color: #fbbf24;
-    border-top: 1px solid #334155;
-    padding-top: 15px;
 }
 
 /* Rarity Colors */
@@ -359,6 +419,19 @@ h1 {
 
 .catch-details {
     margin-bottom: 20px;
+}
+
+.catch-content .btn {
+    width: 100%;
+    min-height: auto;
+    padding: 15px;
+    flex-direction: row;
+    font-size: 1.1rem;
+}
+
+.catch-content .btn:disabled {
+    background-color: #475569;
+    cursor: not-allowed;
 }
 
 .rarity-badge {
@@ -499,6 +572,80 @@ h1 {
     color: #94a3b8;
 }
 
+/* Guide Modal Styles */
+.guide-content-wrapper {
+    max-width: 500px; /* 도감은 좀 더 넓게 */
+    height: 80vh; /* 높이 고정 */
+    display: flex;
+    flex-direction: column;
+}
+
+.guide-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+}
+
+.guide-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.guide-section-title {
+    color: #fbbf24;
+    margin: 15px 0 10px 0;
+    font-size: 1rem;
+    border-left: 3px solid #fbbf24;
+    padding-left: 10px;
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+}
+
+.guide-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.guide-emoji { font-size: 2rem; margin-bottom: 5px; }
+.guide-name { font-weight: bold; margin-bottom: 5px; color: white; }
+.guide-stats { color: #94a3b8; font-size: 0.8rem; line-height: 1.4; }
+.guide-req { color: #ef4444; font-size: 0.75rem; margin-top: 5px; }
+
+.equip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.equip-card { display: flex; align-items: center; gap: 15px; text-align: left; }
+
 /* --- 모바일/태블릿 반응형 스타일 --- */
 @media (max-width: 480px) {
     body {
@@ -507,12 +654,23 @@ h1 {
     }
 
     .game-container {
-        height: 100vh; /* 전체 높이 사용 */
+        min-height: 100vh; /* 전체 높이 사용 */
         border-radius: 0; /* 둥근 모서리 제거 */
         box-shadow: none;
-        padding: 15px;
+        padding: 10px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
         display: flex;
         flex-direction: column;
+    }
+
+    header {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
     }
 
     main {
@@ -524,12 +682,25 @@ h1 {
     .scene {
         flex: 1; /* 남은 공간 모두 차지 */
         height: auto;
-        min-height: 250px;
+        min-height: 200px; /* 최소 높이 줄임 */
+        margin-bottom: 10px;
     }
 
     .controls {
-        padding-bottom: 20px; /* 하단 제스처 바 여유 공간 */
-        flex-wrap: wrap; /* 버튼이 많으면 줄바꿈 */
+        gap: 4px; /* 버튼 간격 좁힘 */
+    }
+
+    .btn {
+        min-height: 60px; /* 버튼 높이 최적화 */
+        padding: 6px 2px;
+    }
+
+    .btn-icon {
+        font-size: 1.5rem;
+    }
+
+    .btn-label {
+        font-size: 0.7rem; /* 글자 크기 조정 */
     }
 
     /* 모달을 전체 화면으로 */
@@ -539,11 +710,13 @@ h1 {
         max-width: none;
         border-radius: 0;
         border: none;
+        padding: 20px;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
         display: flex;
         flex-direction: column;
     }
 
-    .inventory-grid, .ranking-list, .shop-items {
+    .inventory-grid, .ranking-list, .shop-items, .guide-body {
         flex: 1; /* 내용 영역이 남은 공간 차지 */
         max-height: none; /* 높이 제한 해제 */
     }
