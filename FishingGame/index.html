@@ -6,6 +6,55 @@
     <title>우리가족 낚시게임</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎣</text></svg>">
+    <style>
+        /* 설정 버튼 및 모달 스타일 추가 */
+        .settings-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-btn:hover { background: rgba(0, 0, 0, 0.8); }
+        
+        .setting-group { margin-bottom: 20px; text-align: center; }
+        .setting-group h3 { margin-bottom: 10px; color: #fbbf24; }
+        .difficulty-options { display: flex; gap: 10px; justify-content: center; }
+        .diff-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #475569;
+            background: #1e293b;
+            color: #94a3b8;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .diff-btn.active {
+            border-color: #fbbf24;
+            background: #451a03;
+            color: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+        .toggle-btn {
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .toggle-on { background: #22c55e; color: white; border: none; }
+        .toggle-off { background: #ef4444; color: white; border: none; }
+    </style>
 </head>
 <body>
     <div class="game-container">
@@ -22,6 +71,7 @@
                 </div>
                 <div class="stat">EXP: <span id="exp">0</span></div>
             </div>
+            <button id="settings-btn" class="settings-btn">⚙️</button>
         </header>
 
         <!-- 메인 게임 화면 -->
@@ -165,6 +215,29 @@
                 <div id="ranking-list" class="ranking-list">
                     <!-- 자바스크립트로 랭킹 정보 추가됨 -->
                     <div class="ranking-loading">랭킹을 불러오는 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 설정 모달 -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>⚙️ 게임 설정</h2>
+                    <span class="close-btn" id="close-settings">&times;</span>
+                </div>
+                <div class="setting-group">
+                    <h3>🎮 난이도 설정</h3>
+                    <div class="difficulty-options">
+                        <button class="diff-btn" data-diff="EASY">하 (쉬움)<br><span style="font-size:0.7em">보상 50%</span></button>
+                        <button class="diff-btn" data-diff="NORMAL">중 (보통)<br><span style="font-size:0.7em">보상 80%</span></button>
+                        <button class="diff-btn active" data-diff="HARD">상 (어려움)<br><span style="font-size:0.7em">보상 100%</span></button>
+                    </div>
+                    <p id="diff-desc" style="margin-top:10px; font-size:0.9rem; color:#ccc;">현재: 상 (기본 난이도)</p>
+                </div>
+                <div class="setting-group">
+                    <h3>📳 진동 효과</h3>
+                    <button id="vibration-toggle" class="toggle-btn toggle-on">켜짐 (ON)</button>
                 </div>
             </div>
         </div>

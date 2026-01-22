@@ -107,6 +107,15 @@ const RARITY_WEIGHTS = {
     Mythical: 0.1
 };
 
+const RARITY_ORDER = {
+    "Common": 1,
+    "Uncommon": 2,
+    "Rare": 3,
+    "Epic": 4,
+    "Legendary": 5,
+    "Mythical": 6
+};
+
 const ROD_UPGRADES = [
     { name: "대나무 낚싯대", cost: 0 },
     { name: "카본 낚싯대", cost: 1000 },
@@ -136,6 +145,20 @@ const SAFE_ROD_LEVEL = {
     "Legendary": 4,
     "Mythical": 4
 };
+
+// --- 설정 데이터 (Settings) ---
+
+const DIFFICULTY_CONFIG = {
+    'EASY': { label: "하 (쉬움)", drainMult: 0.2, powerMult: 2.0, rewardMult: 0.5, timeBonus: 1000, desc: "어린이용! 희귀(Rare) 등급까지만 등장합니다.", maxRarity: "Rare" },
+    'NORMAL': { label: "중 (보통)", drainMult: 0.6, powerMult: 1.3, rewardMult: 0.8, timeBonus: 500, desc: "적당한 난이도! 전설(Legendary) 등급까지만 등장합니다.", maxRarity: "Legendary" },
+    'HARD': { label: "상 (어려움)", drainMult: 1.0, powerMult: 1.0, rewardMult: 1.0, timeBonus: 0, desc: "모든 물고기(신화 포함)가 등장합니다.", maxRarity: "Mythical" }
+};
+
+let gameSettings = {
+    difficulty: 'HARD', // 기본값: 상
+    vibration: true
+};
+
 
 // --- 상태 관리 (State) ---
 
@@ -207,7 +230,14 @@ const ui = {
 
     // 도감 요소
     guideModal: document.getElementById('guide-modal'),
-    closeGuideBtn: document.getElementById('close-guide')
+    closeGuideBtn: document.getElementById('close-guide'),
+
+    // 설정 요소
+    settingsBtn: document.getElementById('settings-btn'),
+    settingsModal: document.getElementById('settings-modal'),
+    closeSettingsBtn: document.getElementById('close-settings'),
+    vibrationToggle: document.getElementById('vibration-toggle'),
+    diffDesc: document.getElementById('diff-desc')
 };
 
 // --- 게임 로직 (Game Logic) ---
@@ -231,6 +261,9 @@ function startGameWithProfile(profile) {
     createBaitButton(); // 미끼 버튼 생성
     updateUI();
     setWeather();
+    
+    loadLocalSettings(); // 로컬 설정 불러오기
+
     addEventListeners(); // 이벤트 리스너 등록 (버튼 기능 활성화)
 }
 
@@ -248,6 +281,16 @@ function addEventListeners() {
     ui.upgradeLineBtn.addEventListener('click', () => buyUpgrade('line'));
     ui.catchCloseBtn.addEventListener('click', closeCatchModal);
     ui.closeGuideBtn.addEventListener('click', closeGuide);
+    
+    // 설정 관련 이벤트
+    ui.settingsBtn.addEventListener('click', openSettings);
+    ui.closeSettingsBtn.addEventListener('click', closeSettings);
+    ui.vibrationToggle.addEventListener('click', toggleVibration);
+    
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => setDifficulty(e.currentTarget.dataset.diff));
+    });
+
 
     // 1. 릴링 버튼을 드래그 가능하게 만듦
     makeReelButtonDraggable(ui.reelBtn);
@@ -302,6 +345,11 @@ function toggleBait() {
     if (navigator.vibrate) navigator.vibrate(50);
 }
 
+// 진동 래퍼 함수
+function vibrate(pattern) {
+    if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(pattern);
+}
+
 async function updateUI() {
     ui.gold.textContent = playerStats.gold.toLocaleString();
     ui.level.textContent = playerStats.level;
@@ -315,6 +363,7 @@ async function updateUI() {
         ui.inventoryBtn.disabled = false;
         ui.rankingBtn.disabled = false;
         ui.guideBtn.disabled = false;
+        ui.settingsBtn.disabled = false; // 설정 버튼 활성화
         
         ui.castBtn.classList.remove('hidden');
         ui.reelBtn.classList.add('hidden'); // 플로팅 버튼 숨기기
@@ -336,6 +385,7 @@ async function updateUI() {
         ui.inventoryBtn.disabled = true;
         ui.rankingBtn.disabled = true;
         ui.guideBtn.disabled = true;
+        ui.settingsBtn.disabled = true; // 낚시 중 설정 불가
         
         // 낚시 중에는 미끼 변경 불가
         const baitBtn = document.getElementById('bait-btn');
@@ -474,6 +524,9 @@ function startHookingPhase() {
     else if (rarity === 'Legendary') hookWindow = 500;
     else if (rarity === 'Mythical') hookWindow = 400; // 0.4초 안에 반응해야 함
 
+    // 난이도에 따른 시간 보너스 추가
+    hookWindow += DIFFICULTY_CONFIG[gameSettings.difficulty].timeBonus;
+
     // 시각/청각 효과
     ui.mainMessage.textContent = "!!!";
     ui.subMessage.textContent = "지금 당기세요!! (터치)";
@@ -482,7 +535,7 @@ function startHookingPhase() {
     updateUI();
 
     // 진동 피드백 (강한 진동)
-    if (navigator.vibrate) navigator.vibrate(200);
+    vibrate(200);
 
     // 시간 초과 체크 (너무 늦음)
     if (playerStats.hookTimer) clearTimeout(playerStats.hookTimer);
@@ -523,6 +576,9 @@ function startReelingGame() {
     let baseDrain = 0.8; // 기본 감소율 상향 (0.5 -> 0.8)
     const rarity = playerStats.targetFish.rarity;
     let thrashChance = 0.05; // 틱당 저항 확률 상향 (2% -> 5%)
+
+    // 난이도 설정 적용 (감소율 조정)
+    const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
     
     if (rarity === 'Uncommon') { baseDrain = 1.2; thrashChance = 0.08; }
     if (rarity === 'Rare') { baseDrain = 1.8; thrashChance = 0.12; }
@@ -544,6 +600,9 @@ function startReelingGame() {
     // 최종 감소율 계산 (최소 0.3 보장)
     baseDrain = Math.max(0.3, baseDrain - lineReduction);
 
+    // 난이도 배율 적용 (Easy 모드면 감소율 대폭 하락)
+    baseDrain *= diffConfig.drainMult;
+
     // 게임 루프
     if (playerStats.reelingInterval) clearInterval(playerStats.reelingInterval);
     
@@ -562,7 +621,7 @@ function startReelingGame() {
                 playerStats.thrashTimer = 20 + Math.random() * 30; // 1~2.5초간 지속
                 
                 // 저항 시작 시 강한 진동 (손맛)
-                if (navigator.vibrate) navigator.vibrate(200);
+                vibrate(200);
                 
                 // 시각적 효과
                 ui.mainMessage.textContent = "물고기가 저항합니다!!";
@@ -644,7 +703,7 @@ function handleReelClick() {
     if (currentState !== GameState.REELING) return;
 
     // 릴 감을 때 약한 진동 (기계적인 느낌)
-    if (navigator.vibrate) navigator.vibrate(15);
+    vibrate(15);
 
     // 낚싯대 레벨에 따른 게이지 증가량
     let reelPower = 3 + (playerStats.rodLevel * 0.5); // 기본 파워 하향 (4 -> 3)
@@ -658,6 +717,9 @@ function handleReelClick() {
         // 평소에는 찌가 당겨짐
         ui.bobber.style.top = (parseFloat(ui.bobber.style.top) + 1) + '%';
     }
+
+    // 난이도 배율 적용 (Easy 모드면 파워 증가)
+    reelPower *= DIFFICULTY_CONFIG[gameSettings.difficulty].powerMult;
     
     playerStats.reelingProgress += reelPower;
     
@@ -694,10 +756,16 @@ async function endReeling(isSuccess, reason = 'escape') {
         // 물고기 잡음
         const caughtFish = playerStats.targetFish;
         
-        // 보상 지급
-        playerStats.exp += (caughtFish.exp || 10);
+        // 난이도 설정 가져오기
+        const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
+
+        // 보상 계산 (난이도 배율 적용)
+        const finalExp = Math.floor((caughtFish.exp || 10) * diffConfig.rewardMult);
+        const finalPrice = Math.floor(caughtFish.price * diffConfig.rewardMult);
+
+        playerStats.exp += finalExp;
         // 즉시 골드 획득으로 변경
-        playerStats.gold += caughtFish.price;
+        playerStats.gold += finalPrice;
         
         addToInventory(caughtFish);
         
@@ -714,10 +782,10 @@ async function endReeling(isSuccess, reason = 'escape') {
         const comment = phrases[Math.floor(Math.random() * phrases.length)];
 
         ui.mainMessage.textContent = `${caughtFish.name}을(를) 잡았습니다!`;
-        ui.subMessage.textContent = `${comment} (즉시 ${caughtFish.price.toLocaleString()} G 획득!)`;
+        ui.subMessage.textContent = `${comment} (즉시 ${finalPrice.toLocaleString()} G 획득!)`;
         
         // 획득 팝업 표시
-        showCatchModal(caughtFish);
+        showCatchModal(caughtFish, finalPrice);
 
         // 데이터 저장 (Alert 뜨기 전에 저장!)
         await savePlayerData(playerStats);
@@ -731,10 +799,12 @@ async function endReeling(isSuccess, reason = 'escape') {
             ui.mainMessage.textContent = "낚싯대가 부러졌습니다!!";
             ui.subMessage.textContent = "물고기의 힘을 낚싯대가 버티지 못했습니다.";
             ui.mainMessage.style.color = "#ef4444";
-            if (navigator.vibrate) navigator.vibrate(500); // 길게 진동
+            vibrate(500); // 길게 진동
         } else {
-            ui.mainMessage.textContent = "놓쳤습니다...";
-            ui.subMessage.textContent = "미끼만 먹고 도망갔네요.";
+            // 놓친 물고기 정보 표시
+            const missedFish = playerStats.targetFish;
+            ui.mainMessage.textContent = "놓쳤습니다... 😭";
+            ui.subMessage.textContent = `아깝네요! [${missedFish.rarity}] ${missedFish.name} 이(가) 도망갔습니다.`;
         }
     }
 
@@ -743,7 +813,7 @@ async function endReeling(isSuccess, reason = 'escape') {
     setWeather(); // 날씨 변경
 }
 
-function showCatchModal(fish) {
+function showCatchModal(fish, actualPrice) {
     // 문구 랜덤 변경
     const titles = ["🎉 월척이다!", "🎣 나이스 캐치!", "✨ 대박!", "🌊 바다의 선물!", "🐟 잡았다!"];
     ui.catchTitle.textContent = titles[Math.floor(Math.random() * titles.length)];
@@ -751,7 +821,7 @@ function showCatchModal(fish) {
     ui.catchEmoji.textContent = fish.emoji;
     ui.catchName.textContent = fish.name;
     ui.catchRarity.textContent = fish.rarity;
-    ui.catchPrice.textContent = `💰 ${fish.price.toLocaleString()} G`;
+    ui.catchPrice.textContent = `💰 ${actualPrice.toLocaleString()} G`;
     
     // 희귀도에 따른 텍스트 색상 변경
     const colors = {
@@ -792,10 +862,17 @@ function catchRandomFish() {
     // 희귀도 가중치 기반 랜덤 선택
     let selectedRarity = "Common";
 
-    // 미끼에 따른 잡을 수 있는 희귀도 목록 가져오기
-    const allowedRarities = new Set(BAIT_TYPES[playerStats.selectedBait].rarities);
+    // 난이도 제한 확인
+    const maxRarity = DIFFICULTY_CONFIG[gameSettings.difficulty].maxRarity;
+    const maxRarityVal = RARITY_ORDER[maxRarity];
 
-    // 허용된 희귀도 내에서 가중치 계산
+    // 미끼에 따른 잡을 수 있는 희귀도 목록 가져오기
+    const baitRarities = BAIT_TYPES[playerStats.selectedBait].rarities;
+    const allowedRarities = new Set(baitRarities.filter(r => RARITY_ORDER[r] <= maxRarityVal));
+
+    // 허용된 희귀도 내에서 가중치 계산 (만약 비어있다면 Common 추가)
+    if (allowedRarities.size === 0) allowedRarities.add("Common");
+
     let totalWeight = 0;
     const activeWeights = {};
 
@@ -1104,6 +1181,16 @@ function renderFishGuide() {
     const guideBody = document.getElementById('guide-body');
     guideBody.innerHTML = '';
 
+    // 현재 난이도 정보 표시
+    const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
+    const diffInfo = document.createElement('div');
+    const maxRarity = diffConfig.maxRarity;
+    const maxRarityVal = RARITY_ORDER[maxRarity];
+
+    diffInfo.style.cssText = "text-align:center; margin-bottom:10px; color:#94a3b8; font-size:0.85rem; background:#1e293b; padding:8px; border-radius:8px;";
+    diffInfo.innerHTML = `현재 난이도: <span style="color:#fbbf24; font-weight:bold;">${diffConfig.label}</span><br>보상 배율: <span style="color:#fbbf24">${Math.round(diffConfig.rewardMult * 100)}%</span> 적용 중`;
+    guideBody.appendChild(diffInfo);
+
     const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical"];
     const reqRod = {
         "Common": "기본 낚싯대 (Lv.1)",
@@ -1127,13 +1214,31 @@ function renderFishGuide() {
         grid.className = 'guide-grid';
 
         fishes.forEach(fish => {
+            // 난이도별 보상 계산
+            const currentPrice = Math.floor(fish.price * diffConfig.rewardMult);
+            const currentExp = Math.floor(fish.exp * diffConfig.rewardMult);
+            const isObtainable = RARITY_ORDER[fish.rarity] <= maxRarityVal;
+
             const card = document.createElement('div');
             card.className = `guide-card rarity-${rarity.toLowerCase()}`;
-            card.innerHTML = `
-                <div class="guide-emoji">${fish.emoji}</div>
-                <div class="guide-name">${fish.name}</div>
-                <div class="guide-stats">💰 ${fish.price.toLocaleString()} G<br>✨ ${fish.exp} EXP</div>
-            `;
+            
+            if (isObtainable) {
+                card.innerHTML = `
+                    <div class="guide-emoji">${fish.emoji}</div>
+                    <div class="guide-name">${fish.name}</div>
+                    <div class="guide-stats" style="color:#fbbf24">💰 ${currentPrice.toLocaleString()} G</div>
+                    <div class="guide-stats" style="color:#38bdf8">✨ ${currentExp} EXP</div>
+                    <div class="guide-req" style="color:#64748b; margin-top:2px;">(기본: ${fish.price} G)</div>
+                `;
+            } else {
+                card.style.opacity = "0.5";
+                card.innerHTML = `
+                    <div class="guide-emoji">${fish.emoji}</div>
+                    <div class="guide-name">${fish.name}</div>
+                    <div class="guide-stats" style="color:#ef4444; font-weight:bold; margin-top:5px;">⛔ 획득 불가</div>
+                    <div class="guide-req" style="color:#94a3b8">난이도 상향 필요</div>
+                `;
+            }
             grid.appendChild(card);
         });
         guideBody.appendChild(grid);
@@ -1198,6 +1303,70 @@ function renderEquipmentGuide() {
         lineList.appendChild(card);
     });
     guideBody.appendChild(lineList);
+}
+
+// --- 설정(Settings) 로직 ---
+
+function openSettings() {
+    ui.settingsModal.classList.remove('hidden');
+    updateSettingsUI();
+}
+
+function closeSettings() {
+    ui.settingsModal.classList.add('hidden');
+}
+
+function setDifficulty(level) {
+    if (!DIFFICULTY_CONFIG[level]) return;
+    gameSettings.difficulty = level;
+    saveLocalSettings();
+    updateSettingsUI();
+}
+
+function toggleVibration() {
+    gameSettings.vibration = !gameSettings.vibration;
+    if (gameSettings.vibration) vibrate(100); // 켜졌을 때 확인 진동
+    saveLocalSettings();
+    updateSettingsUI();
+}
+
+function updateSettingsUI() {
+    // 난이도 버튼 상태
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        if (btn.dataset.diff === gameSettings.difficulty) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // 설명 텍스트
+    ui.diffDesc.textContent = DIFFICULTY_CONFIG[gameSettings.difficulty].desc;
+
+    // 진동 버튼 상태
+    if (gameSettings.vibration) {
+        ui.vibrationToggle.textContent = "켜짐 (ON)";
+        ui.vibrationToggle.className = "toggle-btn toggle-on";
+    } else {
+        ui.vibrationToggle.textContent = "꺼짐 (OFF)";
+        ui.vibrationToggle.className = "toggle-btn toggle-off";
+    }
+}
+
+function saveLocalSettings() {
+    localStorage.setItem('fishingGameSettings', JSON.stringify(gameSettings));
+}
+
+function loadLocalSettings() {
+    const saved = localStorage.getItem('fishingGameSettings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            gameSettings = { ...gameSettings, ...parsed };
+        } catch (e) {
+            console.error("설정 불러오기 실패", e);
+        }
+    }
 }
 
 window.buyBait = buyBait; // HTML onclick에서 접근 가능하도록 전역 노출
