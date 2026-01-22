@@ -149,8 +149,8 @@ const SAFE_ROD_LEVEL = {
 // --- 설정 데이터 (Settings) ---
 
 const DIFFICULTY_CONFIG = {
-    'EASY': { label: "하 (쉬움)", drainMult: 0.2, powerMult: 2.0, rewardMult: 0.5, timeBonus: 1000, desc: "어린이용! 희귀(Rare) 등급까지만 등장합니다.", maxRarity: "Rare" },
-    'NORMAL': { label: "중 (보통)", drainMult: 0.6, powerMult: 1.3, rewardMult: 0.8, timeBonus: 500, desc: "적당한 난이도! 전설(Legendary) 등급까지만 등장합니다.", maxRarity: "Legendary" },
+    'EASY': { label: "하 (쉬움)", drainMult: 0.2, powerMult: 2.0, rewardMult: 0.2, timeBonus: 1000, desc: "어린이용! 희귀(Rare) 등급까지만 등장합니다.", maxRarity: "Rare" },
+    'NORMAL': { label: "중 (보통)", drainMult: 0.6, powerMult: 1.3, rewardMult: 0.5, timeBonus: 500, desc: "적당한 난이도! 전설(Legendary) 등급까지만 등장합니다.", maxRarity: "Legendary" },
     'HARD': { label: "상 (어려움)", drainMult: 1.0, powerMult: 1.0, rewardMult: 1.0, timeBonus: 0, desc: "모든 물고기(신화 포함)가 등장합니다.", maxRarity: "Mythical" }
 };
 
@@ -350,9 +350,24 @@ function vibrate(pattern) {
     if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(pattern);
 }
 
+// 레벨 보너스 계산 함수 (5레벨마다 10% 복리)
+function getLevelBonus(level) {
+    const bonusTiers = Math.floor((level - 1) / 5);
+    return Math.pow(1.1, bonusTiers);
+}
+
 async function updateUI() {
     ui.gold.textContent = playerStats.gold.toLocaleString();
-    ui.level.textContent = playerStats.level;
+    
+    // 레벨 옆에 현재 적용되는 보너스율 표시 (기존 사용자 동기화 확인용)
+    const bonusMult = getLevelBonus(playerStats.level);
+    const bonusPercent = Math.round((bonusMult - 1) * 100);
+    if (bonusPercent > 0) {
+        ui.level.innerHTML = `${playerStats.level} <span style="font-size:0.7rem; color:#fbbf24; vertical-align:middle;">(+${bonusPercent}%)</span>`;
+    } else {
+        ui.level.textContent = playerStats.level;
+    }
+    
     ui.exp.textContent = playerStats.exp;
     
     // 버튼 상태 업데이트
@@ -428,8 +443,8 @@ function updateLinePosition(visible, bobberX, bobberY) {
     // 간단하게 CSS로 처리하기 위해 HTML 구조상 고정 좌표를 사용합니다.
     // 여기서는 간단히 낚싯대 끝을 화면 중앙 약간 왼쪽으로 가정
     const containerRect = document.querySelector('.visual-area').getBoundingClientRect();
-    const startX = containerRect.width / 2 - 20; 
-    const startY = containerRect.height - 80;
+    const startX = containerRect.width / 2 + 15; // 사람 이모지(🧑) 쪽으로 위치 조정
+    const startY = containerRect.height - 70; // 낚싯대가 없으므로 손 위치쯤으로 높이 조정
 
     ui.fishingLine.setAttribute('x1', startX);
     ui.fishingLine.setAttribute('y1', startY);
@@ -759,9 +774,13 @@ async function endReeling(isSuccess, reason = 'escape') {
         // 난이도 설정 가져오기
         const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
 
+        // 레벨 보너스 계산 (5레벨마다 10%씩 복리 증가, 1~5레벨은 보너스 없음)
+        const levelBonusMultiplier = getLevelBonus(playerStats.level);
+
         // 보상 계산 (난이도 배율 적용)
         const finalExp = Math.floor((caughtFish.exp || 10) * diffConfig.rewardMult);
-        const finalPrice = Math.floor(caughtFish.price * diffConfig.rewardMult);
+        // 기본 가격에 난이도 배율과 레벨 보너스 배율을 모두 적용
+        const finalPrice = Math.floor(caughtFish.price * diffConfig.rewardMult * levelBonusMultiplier);
 
         playerStats.exp += finalExp;
         // 즉시 골드 획득으로 변경
@@ -781,8 +800,14 @@ async function endReeling(isSuccess, reason = 'escape') {
         const phrases = CONGRATS_PHRASES[caughtFish.rarity] || CONGRATS_PHRASES['Common'];
         const comment = phrases[Math.floor(Math.random() * phrases.length)];
 
+        // 보너스 문구 추가
+        let bonusText = `(즉시 ${finalPrice.toLocaleString()} G 획득!)`;
+        if (levelBonusMultiplier > 1) {
+            bonusText = `(즉시 ${finalPrice.toLocaleString()} G 획득! Lv 보너스 +${((levelBonusMultiplier - 1) * 100).toFixed(0)}%)`;
+        }
+
         ui.mainMessage.textContent = `${caughtFish.name}을(를) 잡았습니다!`;
-        ui.subMessage.textContent = `${comment} (즉시 ${finalPrice.toLocaleString()} G 획득!)`;
+        ui.subMessage.textContent = `${comment} ${bonusText}`;
         
         // 획득 팝업 표시
         showCatchModal(caughtFish, finalPrice);
@@ -1144,9 +1169,9 @@ function updateRankingUI(data) {
         itemEl.innerHTML = `
             <div class="ranking-rank">${rank}</div>
             <div class="ranking-info">
-                <div class="ranking-username">👤 ${player.username}</div>
+                <div class="ranking-username">👤 ${player.username} (Lv.${player.level})</div>
                 <div class="ranking-stats">
-                    ⭐ Lv.${player.level} / 💰 ${player.gold.toLocaleString()} G
+                    🏆 ${player.total_score.toLocaleString()} 점
                 </div>
             </div>
         `;

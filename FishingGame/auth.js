@@ -122,18 +122,46 @@ function showAuthError(message) {
 }
 
 async function fetchRankingData() {
+    // 랭킹 산정 기준 변경: gold, exp, 장비 가치(누적 비용) 합산
     const { data, error } = await _supabase
         .from('profiles')
-        .select('username, level, gold')
-        .order('level', { ascending: false })
-        .order('gold', { ascending: false })
-        .limit(10);
+        .select('username, level, gold, exp, rod_level, line_level')
+        // .order()는 JS에서 직접 정렬하므로 제거
+        .limit(100); // 정렬을 위해 더 많은 데이터 로드 후 상위 10개만 사용
 
     if (error) {
         console.error('Error fetching ranking data:', error);
         return [];
     }
-    return data;
+
+    if (!data) return [];
+
+    // 각 플레이어의 총점 계산
+    const scoredData = data.map(player => {
+        // 낚싯대 누적 업그레이드 비용 계산
+        let rodCost = 0;
+        for (let i = 1; i < player.rod_level; i++) {
+            if (ROD_UPGRADES[i]) {
+                rodCost += ROD_UPGRADES[i].cost;
+            }
+        }
+
+        // 낚싯줄 누적 업그레이드 비용 계산
+        let lineCost = 0;
+        for (let i = 1; i < player.line_level; i++) {
+            if (LINE_UPGRADES[i]) {
+                lineCost += LINE_UPGRADES[i].cost;
+            }
+        }
+
+        // 최종 점수 = 보유 골드 + 경험치 + 장비 총 가치
+        const totalScore = player.gold + player.exp + rodCost + lineCost;
+
+        return { ...player, total_score: Math.round(totalScore) };
+    });
+
+    // 총점 기준으로 내림차순 정렬 후 상위 10명 반환
+    return scoredData.sort((a, b) => b.total_score - a.total_score).slice(0, 10);
 }
 
 // 로그인 성공 시 호출되는 공통 함수
