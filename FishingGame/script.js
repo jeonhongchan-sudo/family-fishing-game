@@ -149,9 +149,9 @@ const SAFE_ROD_LEVEL = {
 // --- 설정 데이터 (Settings) ---
 
 const DIFFICULTY_CONFIG = {
-    'EASY': { label: "하 (쉬움)", drainMult: 0.2, powerMult: 2.0, rewardMult: 0.2, timeBonus: 1000, desc: "어린이용! 희귀(Rare) 등급까지만 등장합니다.", maxRarity: "Rare" },
-    'NORMAL': { label: "중 (보통)", drainMult: 0.6, powerMult: 1.3, rewardMult: 0.5, timeBonus: 500, desc: "적당한 난이도! 전설(Legendary) 등급까지만 등장합니다.", maxRarity: "Legendary" },
-    'HARD': { label: "상 (어려움)", drainMult: 1.0, powerMult: 1.0, rewardMult: 1.0, timeBonus: 0, desc: "모든 물고기(신화 포함)가 등장합니다.", maxRarity: "Mythical" }
+    'EASY': { label: "하 (쉬움)", drainMult: 0.2, powerMult: 2.0, rewardMult: 0.2, timeBonus: 1000, desc: "어린이용! 희귀(Rare) 등급까지만 등장합니다.", maxRarity: "Rare", tensionMult: 0.7 },
+    'NORMAL': { label: "중 (보통)", drainMult: 0.6, powerMult: 1.3, rewardMult: 0.5, timeBonus: 500, desc: "적당한 난이도! 전설(Legendary) 등급까지만 등장합니다.", maxRarity: "Legendary", tensionMult: 1.0 },
+    'HARD': { label: "상 (어려움)", drainMult: 1.0, powerMult: 1.0, rewardMult: 1.0, timeBonus: 0, desc: "모든 물고기(신화 포함)가 등장합니다.", maxRarity: "Mythical", tensionMult: 1.3 }
 };
 
 let gameSettings = {
@@ -178,7 +178,13 @@ let playerStats = {
     reelingInterval: null,
     isThrashing: false, // 물고기가 저항 중인지 여부
     thrashTimer: 0,     // 저항 지속 시간
-    hookTimer: null     // 챔질 타이머
+    hookTimer: null,    // 챔질 타이머
+    isReeling: false,   // 릴링 버튼 누르고 있는지 여부
+    tension: 0,         // 낚싯줄 텐션 (0~100)
+    lineHealth: 100,    // 낚싯줄 내구도 (빨간 구간에서 감소)
+    greenZoneMin: 30,   // 초록색 구간 시작점
+    greenZoneMax: 70,   // 초록색 구간 끝점
+    tensionSpeed: 1.0   // 텐션 증가/감소 속도
 };
 
 let currentState = GameState.IDLE;
@@ -206,6 +212,8 @@ const ui = {
     inventoryModal: document.getElementById('inventory-modal'),
     reelingOverlay: document.getElementById('reeling-overlay'),
     reelingBar: document.getElementById('reeling-bar'),
+    tensionGradient: document.getElementById('tension-gradient'), // 텐션 배경
+    tensionMarker: document.getElementById('tension-marker'),     // 텐션 마커
     fishDistance: document.getElementById('fish-distance'),
     closeShopBtn: document.getElementById('close-shop'),
     closeInventoryBtn: document.getElementById('close-inventory'),
@@ -253,6 +261,7 @@ function startGameWithProfile(profile) {
     playerStats.inventory = profile.inventory || [];
     playerStats.baits = profile.baits || { "paste": Infinity };
     playerStats.selectedBait = profile.selected_bait || "paste";
+    playerStats.isReeling = false;
 
     // 떡밥은 항상 무제한 보장
     playerStats.baits["paste"] = Infinity;
@@ -584,61 +593,80 @@ function startReelingGame() {
     if (!playerStats.targetFish) playerStats.targetFish = catchRandomFish();
 
     playerStats.reelingProgress = 30; // 시작 게이지 30%
+    playerStats.lineHealth = 100;     // 줄 내구도 초기화
     playerStats.isThrashing = false;
+    playerStats.isReeling = true; // 챔질 성공 후 바로 릴링 시작 (버튼 누르고 있으므로)
+    playerStats.tension = 20; // 텐션 초기값 (파란색 구간 시작)
     playerStats.thrashTimer = 0;
     
     // 물고기 등급에 따른 난이도 설정
-    let baseDrain = 0.8; // 기본 감소율 상향 (0.5 -> 0.8)
+    // 1. 초록색 구간(Green Zone) 너비 계산
+    let baseGreenWidth = 30; // 기본 너비 축소 (40 -> 30)
     const rarity = playerStats.targetFish.rarity;
-    let thrashChance = 0.05; // 틱당 저항 확률 상향 (2% -> 5%)
-
-    // 난이도 설정 적용 (감소율 조정)
     const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
     
-    if (rarity === 'Uncommon') { baseDrain = 1.2; thrashChance = 0.08; }
-    if (rarity === 'Rare') { baseDrain = 1.8; thrashChance = 0.12; }
-    if (rarity === 'Epic') { baseDrain = 2.5; thrashChance = 0.15; }
-    if (rarity === 'Legendary') { baseDrain = 3.5; thrashChance = 0.20; }
-    if (rarity === 'Mythical') { 
-        baseDrain = 6.0; // 신화급은 기본 감소량이 매우 높음
-        thrashChance = 0.30; // 30% 확률로 미친듯이 저항
-    }
+    // 희귀도에 따른 너비 감소 (어려울수록 좁아짐)
+    let widthPenalty = 0;
+    if (rarity === 'Uncommon') widthPenalty = 3;
+    if (rarity === 'Rare') widthPenalty = 8;
+    if (rarity === 'Epic') widthPenalty = 12;
+    if (rarity === 'Legendary') widthPenalty = 16;
+    if (rarity === 'Mythical') widthPenalty = 20;
 
-    // 낚싯줄 레벨 보정 (등급별로 줄의 영향력 차등 적용)
-    let lineReduction = playerStats.lineLevel * 0.1;
+    // 장비(낚싯줄)에 따른 너비 보너스 (레벨당 3씩 증가)
+    let gearBonus = (playerStats.lineLevel - 1) * 3;
+
+    // 난이도에 따른 보정 (더 명확하게 변경)
+    let difficultyBonus = 0;
+    if (gameSettings.difficulty === 'EASY') difficultyBonus = 15;
+    if (gameSettings.difficulty === 'NORMAL') difficultyBonus = 0; // 기준점
+    if (gameSettings.difficulty === 'HARD') difficultyBonus = -10;
+
+    // 최종 너비 계산 (최소 8, 최대 50)
+    let finalGreenWidth = Math.max(8, Math.min(50, baseGreenWidth - widthPenalty + gearBonus + difficultyBonus));
+
+    // 구간 설정 (중앙 50을 기준으로 배치)
+    playerStats.greenZoneMin = 50 - (finalGreenWidth / 2);
+    playerStats.greenZoneMax = 50 + (finalGreenWidth / 2);
+
+    // 2. 텐션 변화 속도 (물고기 힘) - 유기적 조절
+    let baseTensionSpeed = 1.8; // 기본 속도 상향 (1.5 -> 1.8)
+    if (rarity === 'Uncommon') baseTensionSpeed = 2.0;
+    if (rarity === 'Rare') baseTensionSpeed = 2.4; // 1.8 -> 2.4
+    if (rarity === 'Epic') baseTensionSpeed = 3.0; // 2.2 -> 3.0
+    if (rarity === 'Legendary') baseTensionSpeed = 3.8; // 2.8 -> 3.8
+    if (rarity === 'Mythical') baseTensionSpeed = 4.5; // 3.5 -> 4.5
+
+    // 난이도에 따른 속도 배율 적용
+    baseTensionSpeed *= diffConfig.tensionMult;
+
+    // 장비(낚싯대, 낚싯줄) 레벨에 따른 속도 감소 (제어력 증가)
+    // 낚싯대: 레벨당 0.15 감소, 낚싯줄: 레벨당 0.08 감소
+    const rodReduction = (playerStats.rodLevel - 1) * 0.15;
+    const lineReduction = (playerStats.lineLevel - 1) * 0.08;
     
-    // 신화급은 좋은 줄이 아니면 감소량을 버틸 수 없음
-    if (rarity === 'Mythical') lineReduction = playerStats.lineLevel * 0.5; 
-    else if (rarity === 'Legendary') lineReduction = playerStats.lineLevel * 0.3;
-    else if (rarity === 'Epic') lineReduction = playerStats.lineLevel * 0.2;
+    // 최종 텐션 속도 계산 (최소 1.0 보장)
+    playerStats.tensionSpeed = Math.max(1.0, baseTensionSpeed - rodReduction - lineReduction);
 
-    // 최종 감소율 계산 (최소 0.3 보장)
-    baseDrain = Math.max(0.3, baseDrain - lineReduction);
-
-    // 난이도 배율 적용 (Easy 모드면 감소율 대폭 하락)
-    baseDrain *= diffConfig.drainMult;
+    // 저항 확률
+    let thrashChance = 0.02;
+    if (rarity === 'Legendary' || rarity === 'Mythical') thrashChance = 0.05;
 
     // 게임 루프
     if (playerStats.reelingInterval) clearInterval(playerStats.reelingInterval);
     
     playerStats.reelingInterval = setInterval(() => {
-        // 1. 저항(Thrashing) 상태 관리
+        // 1. 저항(Thrashing) 상태 관리 (랜덤하게 텐션을 빨간색 쪽으로 밈)
         if (playerStats.isThrashing) {
             playerStats.thrashTimer--;
             if (playerStats.thrashTimer <= 0) {
                 playerStats.isThrashing = false;
-                ui.reelingBar.style.filter = "none"; // 시각 효과 해제
             }
         } else {
-            // 랜덤하게 저항 상태 진입
             if (Math.random() < thrashChance) {
                 playerStats.isThrashing = true;
                 playerStats.thrashTimer = 20 + Math.random() * 30; // 1~2.5초간 지속
-                
-                // 저항 시작 시 강한 진동 (손맛)
                 vibrate(200);
-                
-                // 시각적 효과
                 ui.mainMessage.textContent = "물고기가 저항합니다!!";
                 ui.mainMessage.style.color = "#ef4444";
             } else {
@@ -646,39 +674,72 @@ function startReelingGame() {
             }
         }
 
-        // 2. 게이지 감소 계산
-        let currentDrain = baseDrain;
-        
+        // 2. 텐션(마커 위치) 업데이트
+        // 버튼 누름: 텐션 증가 (오른쪽 이동), 뗌: 감소 (왼쪽 이동)
+        let change = 0;
+        if (playerStats.isReeling) {
+            change = playerStats.tensionSpeed;
+        } else {
+            change = -playerStats.tensionSpeed;
+        }
+
+        // 물고기가 저항하면 텐션이 강제로 증가(오른쪽으로 밀림)
         if (playerStats.isThrashing) {
-            // 저항 중일 때는 감소량이 2.5배 (2.0 -> 2.5 복구)
-            currentDrain *= 2.5;
-            // 찌가 미친듯이 흔들림
+            change += 1.0; 
             ui.bobber.style.transform = `translate(${Math.random()*10 - 5}px, ${Math.random()*10 - 5}px)`;
         }
 
-        // 3. 낚싯대 파손 체크 (등급 차이에 따른 위험도)
-        if (playerStats.isThrashing) {
-            const safeLevel = SAFE_ROD_LEVEL[playerStats.targetFish.rarity] || 1;
-            // 낚싯대 레벨이 권장 레벨보다 낮으면 파손 위험 발생
-            if (playerStats.rodLevel < safeLevel) {
-                const gap = safeLevel - playerStats.rodLevel;
-                // 격차가 클수록 파손 확률 급증 (틱당 0.5% ~ 2%)
-                // 1초(20틱) 동안 버틸 확률: 갭1(90%), 갭2(81%), 갭3(66%)
-                const breakChance = 0.005 * gap * (gap >= 2 ? 2 : 1);
+        playerStats.tension += change;
+        playerStats.tension = Math.max(0, Math.min(100, playerStats.tension));
+
+        // 3. 구간별 효과 처리
+        const t = playerStats.tension;
+        const min = playerStats.greenZoneMin;
+        const max = playerStats.greenZoneMax;
+
+        if (t < min) {
+            // [파란색 구간] 텐션 부족 -> 물고기 도망 (게이지 감소)
+            let drainSpeed = 0.5 * diffConfig.drainMult;
+            playerStats.reelingProgress -= drainSpeed;
+            
+            ui.mainMessage.textContent = "텐션이 너무 약해요! (감으세요)";
+            ui.mainMessage.style.color = "#3b82f6";
+            
+        } else if (t >= min && t <= max) {
+            // [초록색 구간] 적정 텐션
+            if (playerStats.isReeling) {
+                // 버튼을 누르고 있을 때만 게이지 증가 (물고기와의 거리 좁히기)
+                let power = (0.4 + (playerStats.rodLevel * 0.1)) * diffConfig.powerMult;
+                playerStats.reelingProgress += power;
                 
-                // 전설/신화 등급은 낚싯대가 안 좋으면 거의 즉시 부러짐 (확률 5배)
-                if (rarity === 'Legendary' || rarity === 'Mythical') {
-                    breakChance *= 5;
-                }
+                ui.mainMessage.textContent = "좋아요! 당기는 중!";
+                ui.mainMessage.style.color = "#22c55e";
                 
-                if (Math.random() < breakChance) {
-                    endReeling(false, 'broken');
-                    return; // 루프 종료
-                }
+                // 초록색 구간에서 릴링 시 미세 진동
+                if (Math.random() < 0.1) vibrate(5);
+            } else {
+                // 버튼을 떼고 있으면 텐션만 유지 (게이지 변화 없음, 힘겨루기 상태)
+                ui.mainMessage.textContent = "좋아요! 텐션 유지 중...";
+                ui.mainMessage.style.color = "#22c55e";
+            }
+
+        } else {
+            // [빨간색 구간] 텐션 과다 -> 줄 손상 (내구도 감소)
+            let damage = 2.0 - (playerStats.lineLevel * 0.2);
+            damage = Math.max(0.5, damage); // 최소 데미지
+            
+            playerStats.lineHealth -= damage;
+            
+            ui.mainMessage.textContent = "줄이 끊어지려 합니다!! (푸세요)";
+            ui.mainMessage.style.color = "#ef4444";
+            vibrate(30); // 경고 진동
+
+            if (playerStats.lineHealth <= 0) {
+                endReeling(false, 'broken');
+                return;
             }
         }
 
-        playerStats.reelingProgress -= currentDrain;
         updateReelingUI();
 
         // 실패 조건
@@ -692,80 +753,80 @@ function startReelingGame() {
     }, 50); // 0.05초마다 업데이트
 }
 
-function handleReelClick() {
-    // 1. 대기 중 클릭 (너무 빠름 - 실패)
+function handleReelDown(e) {
+    // 1. 대기 중 누름 (너무 빠름 - 실패)
     if (currentState === GameState.WAITING) {
         handleHookFail("early");
         return;
     }
 
-    // 2. 챔질 타이밍 클릭 (성공)
+    // 2. 챔질 타이밍 누름 (성공)
     if (currentState === GameState.HOOKING) {
         if (playerStats.hookTimer) clearTimeout(playerStats.hookTimer);
         
         // 릴링 상태로 전환
         currentState = GameState.REELING;
         ui.mainMessage.textContent = "히트!! 무언가 물었습니다!";
-        ui.subMessage.textContent = "릴 감기 버튼을 연타하세요!";
+        ui.subMessage.textContent = "텐션을 초록색 구간에 맞추세요!"; // 안내 문구 변경
         ui.mainMessage.style.color = "white";
         ui.bobber.style.animation = "bobber-bite 0.5s infinite";
         
         updateUI();
         startReelingGame();
+        // startReelingGame 내부에서 isReeling = true로 설정됨
         return;
     }
 
-    if (currentState !== GameState.REELING) return;
+    // 3. 릴링 중 누름 (감기 시작)
+    if (currentState === GameState.REELING) {
+        playerStats.isReeling = true;
+        // 버튼 시각 효과
+        ui.reelBtn.style.transform = "scale(0.95)";
+    }
+}
 
-    // 릴 감을 때 약한 진동 (기계적인 느낌)
-    vibrate(15);
-
-    // 낚싯대 레벨에 따른 게이지 증가량
-    let reelPower = 3 + (playerStats.rodLevel * 0.5); // 기본 파워 하향 (4 -> 3)
-
-    // 물고기가 저항 중일 때는 릴 감는 효율이 40%로 급감 (80% -> 40%)
-    if (playerStats.isThrashing) {
-        reelPower *= 0.4;
-        // 저항 중 클릭 시 찌가 더 크게 튐
-        ui.bobber.style.top = (parseFloat(ui.bobber.style.top) + 2) + '%';
-    } else {
-        // 평소에는 찌가 당겨짐
-        ui.bobber.style.top = (parseFloat(ui.bobber.style.top) + 1) + '%';
+function handleReelUp(e) {
+    if (currentState === GameState.REELING) {
+        playerStats.isReeling = false;
+        ui.reelBtn.style.transform = "scale(1)";
     }
 
-    // 난이도 배율 적용 (Easy 모드면 파워 증가)
-    reelPower *= DIFFICULTY_CONFIG[gameSettings.difficulty].powerMult;
-    
-    playerStats.reelingProgress += reelPower;
-    
-    updateReelingUI();
 }
 
 function updateReelingUI() {
-    // 게이지 바 업데이트
+    // 1. 텐션 게이지 배경 (파랑-초록-빨강 구간 시각화)
+    const min = playerStats.greenZoneMin;
+    const max = playerStats.greenZoneMax;
+    
+    // CSS 그라데이션으로 구간 표시
+    ui.tensionGradient.style.background = 
+        `linear-gradient(90deg, #3b82f6 0%, #3b82f6 ${min}%, #22c55e ${min}%, #22c55e ${max}%, #ef4444 ${max}%, #ef4444 100%)`;
+
+    // 2. 텐션 마커 위치 업데이트
+    ui.tensionMarker.style.left = `${playerStats.tension}%`;
+
+    // 3. 남은 거리 (진행도) 업데이트
     const progress = Math.max(0, Math.min(100, playerStats.reelingProgress));
     ui.reelingBar.style.width = `${progress}%`;
-    
-    // 색상 변경 (위험하면 빨강)
-    if (progress < 30) ui.reelingBar.style.backgroundColor = '#ef4444';
-    else if (progress > 80) ui.reelingBar.style.backgroundColor = '#22c55e';
-    else ui.reelingBar.style.backgroundColor = '#eab308';
-
-    // 저항 중일 때 바 색상 깜빡임 효과
-    if (playerStats.isThrashing) {
-        const isRed = Math.floor(Date.now() / 100) % 2 === 0;
-        ui.reelingBar.style.backgroundColor = isRed ? '#ef4444' : '#ffffff';
-    }
+    ui.reelingBar.style.backgroundColor = '#22c55e'; // 진행도는 항상 초록색
 
     // 남은 거리 표시 (역으로 계산)
     const distance = Math.floor(100 - progress);
     ui.fishDistance.textContent = distance;
+
+    // 4. 줄 내구도 경고 (빨간 구간에 있을 때 화면 붉어짐 효과)
+    if (playerStats.tension > max) {
+        ui.reelingOverlay.style.boxShadow = `0 0 20px rgba(239, 68, 68, ${1 - (playerStats.lineHealth / 100)})`;
+    } else {
+        ui.reelingOverlay.style.boxShadow = 'none';
+    }
 }
 
 async function endReeling(isSuccess, reason = 'escape') {
     clearInterval(playerStats.reelingInterval);
     ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite"; // 애니메이션 복구
     ui.mainMessage.style.color = "white"; // 메시지 색상 복구
+    ui.reelingOverlay.style.boxShadow = 'none'; // 붉은 효과 제거
 
     if (isSuccess) {
         // 물고기 잡음
@@ -821,15 +882,15 @@ async function endReeling(isSuccess, reason = 'escape') {
     } else {
         // 실패
         if (reason === 'broken') {
-            ui.mainMessage.textContent = "낚싯대가 부러졌습니다!!";
-            ui.subMessage.textContent = "물고기의 힘을 낚싯대가 버티지 못했습니다.";
+            ui.mainMessage.textContent = "줄이 끊어졌습니다!!";
+            ui.subMessage.textContent = "빨간색 구간에 너무 오래 머물렀습니다.";
             ui.mainMessage.style.color = "#ef4444";
             vibrate(500); // 길게 진동
         } else {
             // 놓친 물고기 정보 표시
             const missedFish = playerStats.targetFish;
             ui.mainMessage.textContent = "놓쳤습니다... 😭";
-            ui.subMessage.textContent = `아깝네요! [${missedFish.rarity}] ${missedFish.name} 이(가) 도망갔습니다.`;
+            ui.subMessage.textContent = `파란색 구간(텐션 부족)으로 인해 도망갔습니다.`;
         }
     }
 
@@ -1407,6 +1468,7 @@ function makeReelButtonDraggable(element) {
         if (currentState === GameState.IDLE) return;
 
         hasDragged = false;
+        playerStats.isReeling = false; // 초기화
         isDragging = true;
         
         const touch = e.touches ? e.touches[0] : e;
@@ -1422,6 +1484,9 @@ function makeReelButtonDraggable(element) {
         document.addEventListener('touchmove', onMove, { passive: false });
         document.addEventListener('mouseup', onUp);
         document.addEventListener('touchend', onUp);
+
+        // 버튼 누름 처리 (릴링 시작)
+        handleReelDown(e);
     };
 
     const onMove = (e) => {
@@ -1455,10 +1520,8 @@ function makeReelButtonDraggable(element) {
         
         element.style.transition = ''; // 애니메이션 효과 복구
 
-        // 드래그하지 않았다면 '클릭'으로 처리
-        if (!hasDragged) {
-            handleReelClick(e);
-        }
+        // 버튼 뗌 처리 (릴링 멈춤)
+        handleReelUp(e);
 
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('touchmove', onMove);

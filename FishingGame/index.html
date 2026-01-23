@@ -148,11 +148,19 @@
 
         <!-- 릴링 게이지 오버레이 (낚시 중 표시) -->
         <div id="reeling-overlay" class="reeling-ui hidden">
-            <div class="reeling-info">물고기가 저항합니다! 버튼을 연타하세요!</div>
-            <div class="progress-container">
-                <div id="reeling-bar" class="progress-bar" style="width: 0%"></div>
+            <div class="reeling-info">텐션을 <span style="color:#22c55e">초록색</span>에 맞추세요!</div>
+            
+            <!-- 새로운 텐션 게이지 (파랑-초록-빨강) -->
+            <div class="tension-gauge-wrapper">
+                <div id="tension-gradient" class="tension-gradient"></div>
+                <div id="tension-marker" class="tension-marker">▼</div>
+                <div id="tension-zone-indicator" class="tension-zone-indicator"></div>
             </div>
             <div class="reeling-status">거리: <span id="fish-distance">100</span>m</div>
+            <!-- 거리 진행도 바 (보조) -->
+            <div class="progress-container small">
+                <div id="reeling-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
         </div>
 
         <!-- 인벤토리 모달 -->
