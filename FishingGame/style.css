@@ -62,7 +62,7 @@ h1 {
 }
 
 .scene {
-    background: linear-gradient(to bottom, #38bdf8 0%, #60a5fa 50%, #1e3a8a 50%, #1e293b 100%);
+    background: linear-gradient(to bottom, #38bdf8 0%, #60a5fa 50%, #1e3a8a 50%, #1e293b 100%); /* 기본: 맑음 */
     border-radius: 12px;
     margin-bottom: 20px;
     height: 300px;
@@ -71,6 +71,55 @@ h1 {
     display: flex;
     flex-direction: column;
     border: 2px solid #334155;
+    transition: background 1s ease-in-out;
+}
+
+/* 날씨별 배경 */
+.scene.sunny { background: linear-gradient(to bottom, #38bdf8 0%, #60a5fa 50%, #1e3a8a 50%, #1e293b 100%); }
+.scene.cloudy { background: linear-gradient(to bottom, #94a3b8 0%, #b0bec5 50%, #37474f 50%, #263238 100%); }
+.scene.foggy { background: linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 50%, #6b7280 50%, #4b5563 100%); }
+.scene.rainy { background: linear-gradient(to bottom, #6b7280 0%, #9ca3af 50%, #374151 50%, #1f2937 100%); }
+.scene.stormy { background: linear-gradient(to bottom, #1f2937 0%, #374151 50%, #111827 50%, #000000 100%); }
+.scene.night { background: linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, #0c1322 50%, #020617 100%); }
+.scene.sunset { background: linear-gradient(to bottom, #f97316 0%, #fb923c 50%, #4c1d95 50%, #2e1065 100%); }
+
+/* 비 효과 */
+.scene.rainy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(transparent, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 100%);
+    background-size: 1px 10px;
+    animation: rain-fall 0.5s linear infinite;
+}
+@keyframes rain-fall {
+    from { background-position: 0% 0%; }
+    to { background-position: 0% 100%; }
+}
+
+/* 번개 효과 */
+.scene.stormy::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0;
+    animation: lightning-flash 7s linear infinite;
+}
+@keyframes lightning-flash {
+    0% { opacity: 0; }
+    90% { opacity: 0; }
+    90.1% { opacity: 0.8; }
+    90.3% { opacity: 0.2; }
+    90.6% { opacity: 0.6; }
+    91% { opacity: 0; }
+    100% { opacity: 0; }
 }
 
 .weather {

@@ -11,9 +11,14 @@ const GameState = {
 
 // geminiService.ts에서 가져온 데이터
 const WEATHER_OPTIONS = [
-    "맑고 화창함", "안개 자욱함", "가랑비 내림", "강한 바람", 
-    "구름 많음", "천둥 번개", "태풍 전야", "잔잔한 수면",
-    "뜨거운 태양", "시원한 밤공기", "노을 지는 바다"
+    { name: "맑고 화창함", className: "sunny", effect: "sunny" },
+    { name: "안개 자욱함", className: "foggy", effect: "foggy" },
+    { name: "가랑비 내림", className: "rainy", effect: "rainy" },
+    { name: "강한 바람", className: "windy", effect: "windy" },
+    { name: "구름 많음", className: "cloudy", effect: "cloudy" },
+    { name: "천둥 번개", className: "stormy", effect: "stormy" },
+    { name: "시원한 밤공기", className: "night", effect: "night" },
+    { name: "노을 지는 바다", className: "sunset", effect: "sunset" }
 ];
 
 const ADVICE_OPTIONS = [
@@ -33,14 +38,22 @@ const CONGRATS_PHRASES = {
     Mythical: ["신화가 현실이 되었군.", "이건 물고기가 아니야... 살아있는 기적이지."]
 };
 
+const JUNK_ITEMS = [
+    { name: "낡은 장화", emoji: "👢", message: "이걸 신으라고? 발냄새가 여기까지 나는 것 같아!" },
+    { name: "빈 통조림", emoji: "🥫", message: "참치...는 없고 캔만 덩그러니." },
+    { name: "불가사리", emoji: "⭐", message: "이런, 뚱인데요? 아무짝에도 쓸모가 없다." },
+    { name: "해초", emoji: "🌿", message: "미역국이나 끓여야 하나... 낚싯줄만 엉켰네." }
+];
+const JUNK_CHANCE = 0.10; // 10% 확률로 쓰레기 획득
+
 // 물고기 데이터베이스 확장
 const FISH_DATABASE = [
     // Common (흔함)
     { name: "고등어", rarity: "Common", price: 100, exp: 10, emoji: "🐟" },
     { name: "멸치", rarity: "Common", price: 50, exp: 5, emoji: "🐟" },
-    { name: "송어", rarity: "Common", price: 120, exp: 12, emoji: "🐟" },
-    { name: "붕어", rarity: "Common", price: 80, exp: 8, emoji: "🎏" },
-    { name: "망둥어", rarity: "Common", price: 60, exp: 6, emoji: "🦎" },
+    { name: "송어", rarity: "Common", price: 120, exp: 12, emoji: "🐠" },
+    { name: "붕어", rarity: "Common", price: 80, exp: 8, emoji: "🐠" },
+    { name: "망둥어", rarity: "Common", price: 60, exp: 6, emoji: "🐟" },
     { name: "전어", rarity: "Common", price: 110, exp: 11, emoji: "🐟" },
     { name: "꽁치", rarity: "Common", price: 90, exp: 9, emoji: "🐟" },
     { name: "정어리", rarity: "Common", price: 70, exp: 7, emoji: "🐟" },
@@ -48,66 +61,67 @@ const FISH_DATABASE = [
     { name: "피라미", rarity: "Common", price: 30, exp: 3, emoji: "🐟" },
     
     // Uncommon (드묾)
-    { name: "광어", rarity: "Uncommon", price: 300, exp: 30, emoji: "🐠" },
+    { name: "광어", rarity: "Uncommon", price: 300, exp: 30, emoji: "🐟" },
     { name: "우럭", rarity: "Uncommon", price: 350, exp: 35, emoji: "🐟" },
-    { name: "오징어", rarity: "Uncommon", price: 400, exp: 40, emoji: "🦑" },
-    { name: "문어", rarity: "Uncommon", price: 450, exp: 45, emoji: "🐙" },
-    { name: "연어", rarity: "Uncommon", price: 500, exp: 50, emoji: "🍣" },
-    { name: "삼치", rarity: "Uncommon", price: 320, exp: 32, emoji: "🦈" },
+    { name: "오징어", rarity: "Uncommon", price: 400, exp: 40, emoji: "🦑", weather: "night" },
+    { name: "문어", rarity: "Uncommon", price: 450, exp: 45, emoji: "🐙", weather: "night" },
+    { name: "연어", rarity: "Uncommon", price: 500, exp: 50, emoji: "🐠" },
+    { name: "삼치", rarity: "Uncommon", price: 320, exp: 32, emoji: "🐟" },
     { name: "농어", rarity: "Uncommon", price: 380, exp: 38, emoji: "🐟" },
-    { name: "도다리", rarity: "Uncommon", price: 310, exp: 31, emoji: "🐠" },
+    { name: "도다리", rarity: "Uncommon", price: 310, exp: 31, emoji: "🐟" },
     { name: "쥐치", rarity: "Uncommon", price: 280, exp: 28, emoji: "🐠" },
-    { name: "가자미", rarity: "Uncommon", price: 290, exp: 29, emoji: "🐠" },
+    { name: "가자미", rarity: "Uncommon", price: 290, exp: 29, emoji: "🐟" },
     { name: "쭈꾸미", rarity: "Uncommon", price: 420, exp: 42, emoji: "🐙" },
 
     // Rare (희귀)
-    { name: "참돔", rarity: "Rare", price: 1000, exp: 100, emoji: "🐡" },
-    { name: "돌돔", rarity: "Rare", price: 1200, exp: 120, emoji: "🐡" },
+    { name: "참돔", rarity: "Rare", price: 1000, exp: 100, emoji: "🐠" },
+    { name: "돌돔", rarity: "Rare", price: 1200, exp: 120, emoji: "🐠" },
     { name: "복어", rarity: "Rare", price: 1500, exp: 150, emoji: "🐡" },
     { name: "아귀", rarity: "Rare", price: 1300, exp: 130, emoji: "🐠" },
-    { name: "쏘가리", rarity: "Rare", price: 1100, exp: 110, emoji: "🐟" },
-    { name: "장어", rarity: "Rare", price: 1400, exp: 140, emoji: "🐍" },
-    { name: "민어", rarity: "Rare", price: 1600, exp: 160, emoji: "🐡" },
-    { name: "방어", rarity: "Rare", price: 1250, exp: 125, emoji: "🐡" },
-    { name: "감성돔", rarity: "Rare", price: 1150, exp: 115, emoji: "🐡" },
+    { name: "쏘가리", rarity: "Rare", price: 1100, exp: 110, emoji: "🐠" },
+    { name: "장어", rarity: "Rare", price: 1400, exp: 140, emoji: "🐟", weather: "rainy" },
+    { name: "민어", rarity: "Rare", price: 1600, exp: 160, emoji: "🐟" },
+    { name: "방어", rarity: "Rare", price: 1250, exp: 125, emoji: "🐟" },
+    { name: "감성돔", rarity: "Rare", price: 1150, exp: 115, emoji: "🐟" },
     { name: "랍스터", rarity: "Rare", price: 1800, exp: 180, emoji: "🦞" },
 
     // Epic (영웅)
-    { name: "다금바리", rarity: "Epic", price: 5000, exp: 500, emoji: "🦈" },
+    { name: "다금바리", rarity: "Epic", price: 5000, exp: 500, emoji: "🐟" },
     { name: "참치", rarity: "Epic", price: 6000, exp: 600, emoji: "🐟" },
     { name: "킹크랩", rarity: "Epic", price: 5500, exp: 550, emoji: "🦀" },
-    { name: "돗돔", rarity: "Epic", price: 5200, exp: 520, emoji: "🦈" },
+    { name: "돗돔", rarity: "Epic", price: 5200, exp: 520, emoji: "🐟" },
     { name: "붉은바다거북", rarity: "Epic", price: 5800, exp: 580, emoji: "🐢" },
     { name: "대왕문어", rarity: "Epic", price: 5300, exp: 530, emoji: "🐙" },
-    { name: "철갑상어", rarity: "Epic", price: 6500, exp: 650, emoji: "🦈" },
-    { name: "돛새치", rarity: "Epic", price: 6200, exp: 620, emoji: "🦈" },
+    { name: "철갑상어", rarity: "Epic", price: 6500, exp: 650, emoji: "🐟" },
+    { name: "돛새치", rarity: "Epic", price: 6200, exp: 620, emoji: "🐟" },
 
     // Legendary (전설)
-    { name: "청새치", rarity: "Legendary", price: 20000, exp: 2000, emoji: "🐋" },
-    { name: "백상아리", rarity: "Legendary", price: 25000, exp: 2500, emoji: "🦈" },
-    { name: "황금잉어", rarity: "Legendary", price: 30000, exp: 3000, emoji: "🎏" },
+    { name: "청새치", rarity: "Legendary", price: 20000, exp: 2000, emoji: "🐟" },
+    { name: "백상아리", rarity: "Legendary", price: 25000, exp: 2500, emoji: "🦈", weather: "stormy" },
+    { name: "황금잉어", rarity: "Legendary", price: 30000, exp: 3000, emoji: "🐠" },
     { name: "범고래", rarity: "Legendary", price: 28000, exp: 2800, emoji: "🐋" },
     { name: "대왕오징어", rarity: "Legendary", price: 22000, exp: 2200, emoji: "🦑" },
-    { name: "실러캔스", rarity: "Legendary", price: 35000, exp: 3500, emoji: "🦕" },
+    { name: "실러캔스", rarity: "Legendary", price: 35000, exp: 3500, emoji: "🐟" },
     { name: "개복치", rarity: "Legendary", price: 21000, exp: 2100, emoji: "🐠" },
 
     // Mythical (신화)
     { name: "크라켄", rarity: "Mythical", price: 99999, exp: 10000, emoji: "🦑" },
-    { name: "리바이어던", rarity: "Mythical", price: 150000, exp: 15000, emoji: "🐉" },
+    { name: "리바이어던", rarity: "Mythical", price: 150000, exp: 15000, emoji: "🐉", weather: "stormy" },
     { name: "모비딕", rarity: "Mythical", price: 120000, exp: 12000, emoji: "🐋" },
     { name: "히드라", rarity: "Mythical", price: 130000, exp: 13000, emoji: "🐍" }
 ];
 
 const RARITY_WEIGHTS = {
-    Common: 60,
+    Common: 58,
     Uncommon: 25,
     Rare: 10,
-    Epic: 4,
-    Legendary: 0.9,
-    Mythical: 0.1
+    Epic: 5,
+    Legendary: 1.5,
+    Mythical: 0.5
 };
 
 const RARITY_ORDER = {
+    "Junk": 0,
     "Common": 1,
     "Uncommon": 2,
     "Rare": 3,
@@ -116,18 +130,52 @@ const RARITY_ORDER = {
     "Mythical": 6
 };
 
+// 20단계로 확장된 낚싯대 업그레이드
 const ROD_UPGRADES = [
-    { name: "대나무 낚싯대", cost: 0 },
-    { name: "카본 낚싯대", cost: 1000 },
-    { name: "티타늄 낚싯대", cost: 5000 },
-    { name: "황금 낚싯대", cost: 20000 }
+    { name: "낡은 대나무 낚싯대", cost: 0 }, // Lv. 1
+    { name: "카본 낚싯대", cost: 1000 }, // Lv. 2
+    { name: "유리섬유 낚싯대", cost: 3500 }, // Lv. 3
+    { name: "티타늄 낚싯대", cost: 8000 }, // Lv. 4
+    { name: "그래핀 낚싯대", cost: 15000 }, // Lv. 5
+    { name: "다이아몬드 코팅 낚싯대", cost: 28000 }, // Lv. 6
+    { name: "오리하르콘 낚싯대", cost: 50000 }, // Lv. 7
+    { name: "미스릴 낚싯대", cost: 90000 }, // Lv. 8
+    { name: "태양의 낚싯대", cost: 160000 }, // Lv. 9
+    { name: "달의 낚싯대", cost: 300000 }, // Lv. 10
+    { name: "성운의 낚싯대", cost: 550000 }, // Lv. 11
+    { name: "차원의 낚싯대", cost: 1000000 }, // Lv. 12
+    { name: "고대 용의 뼈 낚싯대", cost: 1800000 }, // Lv. 13
+    { name: "세계수의 가지", cost: 3200000 }, // Lv. 14
+    { name: "은하수 낚싯대", cost: 5800000 }, // Lv. 15
+    { name: "신을 낚는 낚싯대", cost: 10000000 }, // Lv. 16
+    { name: "크로노스 낚싯대", cost: 18000000 }, // Lv. 17
+    { name: "가이아의 의지", cost: 32000000 }, // Lv. 18
+    { name: "우주의 균형", cost: 58000000 }, // Lv. 19
+    { name: "창조주의 손길", cost: 100000000 } // Lv. 20
 ];
 
+// 20단계로 확장된 낚싯줄 업그레이드
 const LINE_UPGRADES = [
-    { name: "나일론 줄", cost: 0 },
-    { name: "합사 줄", cost: 500 },
-    { name: "강철 와이어", cost: 2500 },
-    { name: "미스릴 줄", cost: 10000 }
+    { name: "낡은 나일론 줄", cost: 0 }, // Lv. 1
+    { name: "고급 나일론 줄", cost: 500 }, // Lv. 2
+    { name: "합사 줄", cost: 2000 }, // Lv. 3
+    { name: "강철 와이어", cost: 5000 }, // Lv. 4
+    { name: "케블라 섬유", cost: 10000 }, // Lv. 5
+    { name: "티타늄 와이어", cost: 20000 }, // Lv. 6
+    { name: "거미 신의 실", cost: 40000 }, // Lv. 7
+    { name: "미스릴 와이어", cost: 80000 }, // Lv. 8
+    { name: "용의 힘줄", cost: 150000 }, // Lv. 9
+    { name: "유니콘의 머리카락", cost: 280000 }, // Lv. 10
+    { name: "별빛의 실", cost: 500000 }, // Lv. 11
+    { name: "시간의 실", cost: 900000 }, // Lv. 12
+    { name: "운명의 실", cost: 1600000 }, // Lv. 13
+    { name: "무지개 실", cost: 3000000 }, // Lv. 14
+    { name: "블랙홀 와이어", cost: 5500000 }, // Lv. 15
+    { name: "절대자의 인연", cost: 10000000 }, // Lv. 16
+    { name: "엔트로피의 고리", cost: 18000000 }, // Lv. 17
+    { name: "인과의 사슬", cost: 32000000 }, // Lv. 18
+    { name: "평행우주의 끈", cost: 58000000 }, // Lv. 19
+    { name: "개념의 실", cost: 100000000 } // Lv. 20
 ];
 
 const BAIT_TYPES = {
@@ -135,15 +183,6 @@ const BAIT_TYPES = {
     "worm": { name: "지렁이", price: 100, rarities: ["Common", "Uncommon", "Rare"], emoji: "🪱", description: "꿈틀거리는 지렁이. 희귀 어종도 좋아합니다." },
     "krill": { name: "크릴새우", price: 500, rarities: ["Common", "Uncommon", "Rare", "Epic"], emoji: "🦐", description: "고급 미끼. 대물들이 냄새를 맡고 옵니다." },
     "lure": { name: "황금 루어", price: 2000, rarities: ["Rare", "Epic", "Legendary", "Mythical"], emoji: "✨", description: "전설의 물고기를 유혹하는 빛나는 루어." }
-};
-
-const SAFE_ROD_LEVEL = {
-    "Common": 1,
-    "Uncommon": 1,
-    "Rare": 2,
-    "Epic": 3,
-    "Legendary": 4,
-    "Mythical": 4
 };
 
 // --- 설정 데이터 (Settings) ---
@@ -156,7 +195,8 @@ const DIFFICULTY_CONFIG = {
 
 let gameSettings = {
     difficulty: 'HARD', // 기본값: 상
-    vibration: true
+    vibration: true,
+    currentWeather: null
 };
 
 
@@ -171,6 +211,7 @@ let playerStats = {
     inventory: [], // { name, count, emoji, rarity, price }
     baits: { "paste": Infinity }, // 보유 미끼
     selectedBait: "paste",        // 현재 선택된 미끼
+    lineBreakCount: 0, // 낚싯줄 끊어짐 횟수
     
     // 로컬 게임 상태 (DB에 저장 안 함)
     reelingProgress: 0, // 0 ~ 100
@@ -196,6 +237,7 @@ const ui = {
     level: document.getElementById('level'),
     exp: document.getElementById('exp'),
     weather: document.getElementById('weather-display'),
+    scene: document.querySelector('.scene'),
     mainMessage: document.getElementById('main-message'),
     subMessage: document.getElementById('sub-message'),
     bobber: document.getElementById('bobber'),
@@ -261,6 +303,7 @@ function startGameWithProfile(profile) {
     playerStats.inventory = profile.inventory || [];
     playerStats.baits = profile.baits || { "paste": Infinity };
     playerStats.selectedBait = profile.selected_bait || "paste";
+    playerStats.lineBreakCount = Number(profile.line_break_count) || 0;
     playerStats.isReeling = false;
 
     // 떡밥은 항상 무제한 보장
@@ -432,8 +475,18 @@ async function updateUI() {
 }
 
 function setWeather() {
-    const randomWeather = WEATHER_OPTIONS[Math.floor(Math.random() * WEATHER_OPTIONS.length)];
-    ui.weather.textContent = `날씨: ${randomWeather}`;
+    const weather = WEATHER_OPTIONS[Math.floor(Math.random() * WEATHER_OPTIONS.length)];
+    gameSettings.currentWeather = weather;
+
+    // 기존 날씨 클래스 모두 제거
+    WEATHER_OPTIONS.forEach(opt => {
+        if (opt.className) ui.scene.classList.remove(opt.className);
+    });
+    // 새 날씨 클래스 추가
+    ui.scene.classList.add(weather.className);
+
+    // 텍스트 업데이트
+    ui.weather.textContent = `날씨: ${weather.name}`;
 }
 
 // 낚싯줄 그리기 (SVG 좌표 업데이트)
@@ -605,6 +658,9 @@ function startReelingGame() {
     const rarity = playerStats.targetFish.rarity;
     const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
     
+    let thrashChance = 0.02; // 기본 저항 확률
+
+    // 쓰레기도 일반 물고기처럼 보이도록 난이도 로직을 통합합니다.
     // 희귀도에 따른 너비 감소 (어려울수록 좁아짐)
     let widthPenalty = 0;
     if (rarity === 'Uncommon') widthPenalty = 3;
@@ -613,10 +669,10 @@ function startReelingGame() {
     if (rarity === 'Legendary') widthPenalty = 16;
     if (rarity === 'Mythical') widthPenalty = 20;
 
-    // 장비(낚싯줄)에 따른 너비 보너스 (레벨당 3씩 증가)
-    let gearBonus = (playerStats.lineLevel - 1) * 3;
+    // 장비(낚싯줄)에 따른 너비 보너스 (레벨당 1.5씩 증가)
+    let gearBonus = (playerStats.lineLevel - 1) * 1.5;
 
-    // 난이도에 따른 보정 (더 명확하게 변경)
+    // 난이도에 따른 너비 보너스
     let difficultyBonus = 0;
     if (gameSettings.difficulty === 'EASY') difficultyBonus = 15;
     if (gameSettings.difficulty === 'NORMAL') difficultyBonus = 0; // 기준점
@@ -641,15 +697,13 @@ function startReelingGame() {
     baseTensionSpeed *= diffConfig.tensionMult;
 
     // 장비(낚싯대, 낚싯줄) 레벨에 따른 속도 감소 (제어력 증가)
-    // 낚싯대: 레벨당 0.15 감소, 낚싯줄: 레벨당 0.08 감소
-    const rodReduction = (playerStats.rodLevel - 1) * 0.15;
+    // 낚싯대: 레벨당 0.12 감소, 낚싯줄: 레벨당 0.08 감소
+    const rodReduction = (playerStats.rodLevel - 1) * 0.12;
     const lineReduction = (playerStats.lineLevel - 1) * 0.08;
     
     // 최종 텐션 속도 계산 (최소 1.0 보장)
     playerStats.tensionSpeed = Math.max(1.0, baseTensionSpeed - rodReduction - lineReduction);
 
-    // 저항 확률
-    let thrashChance = 0.02;
     if (rarity === 'Legendary' || rarity === 'Mythical') thrashChance = 0.05;
 
     // 게임 루프
@@ -709,7 +763,8 @@ function startReelingGame() {
             // [초록색 구간] 적정 텐션
             if (playerStats.isReeling) {
                 // 버튼을 누르고 있을 때만 게이지 증가 (물고기와의 거리 좁히기)
-                let power = (0.4 + (playerStats.rodLevel * 0.1)) * diffConfig.powerMult;
+                // 낚싯대 레벨이 높을수록 파워 증가
+                let power = (0.3 + (playerStats.rodLevel * 0.15)) * diffConfig.powerMult;
                 playerStats.reelingProgress += power;
                 
                 ui.mainMessage.textContent = "좋아요! 당기는 중!";
@@ -725,9 +780,18 @@ function startReelingGame() {
 
         } else {
             // [빨간색 구간] 텐션 과다 -> 줄 손상 (내구도 감소)
-            let damage = 2.0 - (playerStats.lineLevel * 0.2);
-            damage = Math.max(0.5, damage); // 최소 데미지
+            // 낚싯줄 레벨이 높을수록 데미지 감소
+            let damage = 2.5 - (playerStats.lineLevel * 0.15);
+            damage = Math.max(0.2, damage); // 최소 데미지
             
+            playerStats.lineHealth -= damage;
+
+            // 낚싯대 파손 확률 (매우 희귀)
+            const rodBreakChance = 0.0005; // 0.05%
+            if (playerStats.rodLevel > 1 && Math.random() < rodBreakChance) {
+                handleRodBreak();
+                return; // 릴링 즉시 중단
+            }
             playerStats.lineHealth -= damage;
             
             ui.mainMessage.textContent = "줄이 끊어지려 합니다!! (푸세요)";
@@ -829,55 +893,14 @@ async function endReeling(isSuccess, reason = 'escape') {
     ui.reelingOverlay.style.boxShadow = 'none'; // 붉은 효과 제거
 
     if (isSuccess) {
-        // 물고기 잡음
-        const caughtFish = playerStats.targetFish;
-        
-        // 난이도 설정 가져오기
-        const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
+        const caughtItem = playerStats.targetFish;
 
-        // 레벨 보너스 계산 (5레벨마다 10%씩 복리 증가, 1~5레벨은 보너스 없음)
-        const levelBonusMultiplier = getLevelBonus(playerStats.level);
-
-        // 보상 계산 (난이도 배율 적용)
-        const finalExp = Math.floor((caughtFish.exp || 10) * diffConfig.rewardMult);
-        // 기본 가격에 난이도 배율과 레벨 보너스 배율을 모두 적용
-        const finalPrice = Math.floor(caughtFish.price * diffConfig.rewardMult * levelBonusMultiplier);
-
-        playerStats.exp += finalExp;
-        // 즉시 골드 획득으로 변경
-        playerStats.gold += finalPrice;
-        
-        addToInventory(caughtFish);
-        
-        let leveledUp = false;
-        // 레벨업 체크
-        if (playerStats.exp >= playerStats.level * 100) {
-            playerStats.level++;
-            playerStats.exp = 0;
-            leveledUp = true;
-        }
-
-        // 코멘트 생성
-        const phrases = CONGRATS_PHRASES[caughtFish.rarity] || CONGRATS_PHRASES['Common'];
-        const comment = phrases[Math.floor(Math.random() * phrases.length)];
-
-        // 보너스 문구 추가
-        let bonusText = `(즉시 ${finalPrice.toLocaleString()} G 획득!)`;
-        if (levelBonusMultiplier > 1) {
-            bonusText = `(즉시 ${finalPrice.toLocaleString()} G 획득! Lv 보너스 +${((levelBonusMultiplier - 1) * 100).toFixed(0)}%)`;
-        }
-
-        ui.mainMessage.textContent = `${caughtFish.name}을(를) 잡았습니다!`;
-        ui.subMessage.textContent = `${comment} ${bonusText}`;
-        
-        // 획득 팝업 표시
-        showCatchModal(caughtFish, finalPrice);
-
-        // 데이터 저장 (Alert 뜨기 전에 저장!)
-        await savePlayerData(playerStats);
-
-        if (leveledUp) {
-            setTimeout(() => alert("🎉 레벨 업! 더 좋은 낚시꾼이 되었습니다."), 100);
+        // 잡은 것이 쓰레기인지 확인
+        if (caughtItem.rarity === 'Junk') {
+            handleJunkCatch(caughtItem);
+        } else {
+            // 기존 물고기 잡기 성공 로직
+            await handleFishCatch(caughtItem);
         }
     } else {
         // 실패
@@ -886,6 +909,28 @@ async function endReeling(isSuccess, reason = 'escape') {
             ui.subMessage.textContent = "빨간색 구간에 너무 오래 머물렀습니다.";
             ui.mainMessage.style.color = "#ef4444";
             vibrate(500); // 길게 진동
+
+            // 낚싯줄 내구도 시스템
+            if (playerStats.lineLevel > 1) {
+                playerStats.lineBreakCount = (playerStats.lineBreakCount || 0) + 1;
+                const breakThreshold = 3;
+                if (playerStats.lineBreakCount >= breakThreshold) {
+                    const brokenLine = LINE_UPGRADES[playerStats.lineLevel - 1];
+                    playerStats.lineLevel--;
+                    playerStats.lineBreakCount = 0;
+                    
+                    setTimeout(() => {
+                        alert(`낚싯줄이 완전히 삭아버렸습니다!\n'${brokenLine.name}'을(를) 잃고 한 단계 낮은 낚싯줄로 교체됩니다.`);
+                        savePlayerData(playerStats);
+                        updateUI(); // UI 갱신
+                    }, 200);
+
+                } else {
+                    const remaining = breakThreshold - playerStats.lineBreakCount;
+                    ui.subMessage.textContent += ` (현재 줄 내구도: ${remaining}번 남음)`;
+                    savePlayerData(playerStats);
+                }
+            }
         } else {
             // 놓친 물고기 정보 표시
             const missedFish = playerStats.targetFish;
@@ -899,27 +944,124 @@ async function endReeling(isSuccess, reason = 'escape') {
     setWeather(); // 날씨 변경
 }
 
-function showCatchModal(fish, actualPrice) {
-    // 문구 랜덤 변경
-    const titles = ["🎉 월척이다!", "🎣 나이스 캐치!", "✨ 대박!", "🌊 바다의 선물!", "🐟 잡았다!"];
-    ui.catchTitle.textContent = titles[Math.floor(Math.random() * titles.length)];
+async function handleFishCatch(caughtFish) {
+    // 난이도 설정 가져오기
+    const diffConfig = DIFFICULTY_CONFIG[gameSettings.difficulty];
 
-    ui.catchEmoji.textContent = fish.emoji;
-    ui.catchName.textContent = fish.name;
-    ui.catchRarity.textContent = fish.rarity;
-    ui.catchPrice.textContent = `💰 ${actualPrice.toLocaleString()} G`;
+    // 레벨 보너스 계산 (5레벨마다 10%씩 복리 증가, 1~5레벨은 보너스 없음)
+    const levelBonusMultiplier = getLevelBonus(playerStats.level);
+
+    // 보상 계산 (난이도 배율 적용)
+    const finalExp = Math.floor((caughtFish.exp || 10) * diffConfig.rewardMult);
+    // 기본 가격에 난이도 배율과 레벨 보너스 배율을 모두 적용
+    const finalPrice = Math.floor(caughtFish.price * diffConfig.rewardMult * levelBonusMultiplier);
+
+    playerStats.exp += finalExp;
+    playerStats.gold += finalPrice;
     
-    // 희귀도에 따른 텍스트 색상 변경
-    const colors = {
-        "Common": "#94a3b8",
-        "Uncommon": "#22c55e",
-        "Rare": "#3b82f6",
-        "Epic": "#a855f7",
-        "Legendary": "#eab308",
-        "Mythical": "#ef4444"
-    };
-    ui.catchRarity.style.color = colors[fish.rarity] || "white";
-    ui.catchRarity.style.borderColor = colors[fish.rarity] || "white";
+    addToInventory(caughtFish);
+    
+    let leveledUp = false;
+    // 레벨업 체크
+    if (playerStats.exp >= playerStats.level * 100) {
+        playerStats.level++;
+        playerStats.exp = 0;
+        leveledUp = true;
+    }
+
+    const phrases = CONGRATS_PHRASES[caughtFish.rarity] || CONGRATS_PHRASES['Common'];
+    const comment = phrases[Math.floor(Math.random() * phrases.length)];
+
+    let bonusText = `(즉시 ${finalPrice.toLocaleString()} G 획득!)`;
+    if (levelBonusMultiplier > 1) {
+        bonusText = `(즉시 ${finalPrice.toLocaleString()} G 획득! Lv 보너스 +${((levelBonusMultiplier - 1) * 100).toFixed(0)}%)`;
+    }
+
+    ui.mainMessage.textContent = `${caughtFish.name}을(를) 잡았습니다!`;
+    ui.subMessage.textContent = `${comment} ${bonusText}`;
+    
+    showCatchModal(caughtFish, finalPrice);
+
+    await savePlayerData(playerStats);
+
+    if (leveledUp) {
+        setTimeout(() => alert("🎉 레벨 업! 더 좋은 낚시꾼이 되었습니다."), 100);
+    }
+}
+
+function handleJunkCatch(junkItem) {
+    ui.mainMessage.textContent = `${junkItem.name}을(를) 낚았습니다...`;
+    ui.subMessage.textContent = junkItem.message || "이런, 쓸모없는 걸 낚았네.";
+    vibrate([50, 100, 50]);
+    showCatchModal(junkItem);
+}
+
+function handleRodBreak() {
+    clearInterval(playerStats.reelingInterval);
+    currentState = GameState.IDLE;
+    ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite";
+    ui.mainMessage.style.color = "white";
+    ui.reelingOverlay.style.boxShadow = 'none';
+
+    const brokenRod = ROD_UPGRADES[playerStats.rodLevel - 1];
+    playerStats.rodLevel--;
+    
+    ui.mainMessage.textContent = "쨍그랑!!! 낚싯대가 부러졌습니다!";
+    ui.subMessage.textContent = `${brokenRod.name}이(가) 파손되어 등급이 하락했습니다.`;
+    ui.mainMessage.style.color = "#ef4444";
+    vibrate([200, 100, 200]);
+
+    // alert는 다른 UI 업데이트가 끝난 후 표시
+    setTimeout(() => {
+        alert(`💥 아뿔싸! 무리한 릴링으로 인해 ${brokenRod.name}이(가) 부러졌습니다!\n낚싯대 등급이 1 하락합니다.`);
+    }, 100);
+    
+    savePlayerData(playerStats);
+    updateUI();
+}
+
+function showCatchModal(fish, actualPrice) {
+    if (fish.rarity === 'Junk') {
+        const titles = ["이런...", "에구머니나!", "이게 뭐야!"];
+        ui.catchTitle.textContent = titles[Math.floor(Math.random() * titles.length)];
+        ui.catchEmoji.textContent = fish.emoji;
+        ui.catchName.textContent = fish.name;
+        ui.catchRarity.textContent = "쓰레기";
+        ui.catchPrice.textContent = `💰 0 G`;
+        ui.catchRarity.style.color = "#64748b";
+        ui.catchRarity.style.borderColor = "#64748b";
+    } else {
+        // 기존 물고기 잡았을 때 로직
+        const titles = ["🎉 월척이다!", "🎣 나이스 캐치!", "✨ 대박!", "🌊 바다의 선물!", "🐟 잡았다!"];
+        ui.catchTitle.textContent = titles[Math.floor(Math.random() * titles.length)];
+
+        ui.catchEmoji.textContent = fish.emoji;
+        ui.catchName.textContent = fish.name;
+        ui.catchRarity.textContent = fish.rarity;
+        ui.catchPrice.textContent = `💰 ${actualPrice.toLocaleString()} G`;
+        
+        // 희귀도에 따른 텍스트 색상 변경
+        const colors = {
+            "Common": "#94a3b8",
+            "Uncommon": "#22c55e",
+            "Rare": "#3b82f6",
+            "Epic": "#a855f7",
+            "Legendary": "#eab308",
+            "Mythical": "#ef4444"
+        };
+        ui.catchRarity.style.color = colors[fish.rarity] || "white";
+        ui.catchRarity.style.borderColor = colors[fish.rarity] || "white";
+
+        // 폭죽 효과 (Confetti)
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                zIndex: 1000 // 모달 위에 표시되도록 설정
+            });
+        }
+    }
     
     // 3. 확인 버튼 오클릭 방지
     ui.catchCloseBtn.disabled = true;
@@ -928,16 +1070,6 @@ function showCatchModal(fish, actualPrice) {
     }, 1000); // 1초 후 버튼 활성화
 
     ui.catchModal.classList.remove('hidden');
-
-    // 폭죽 효과 (Confetti)
-    if (typeof confetti === 'function') {
-        confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            zIndex: 1000 // 모달 위에 표시되도록 설정
-        });
-    }
 }
 
 function closeCatchModal() {
@@ -945,47 +1077,51 @@ function closeCatchModal() {
 }
 
 function catchRandomFish() {
-    // 희귀도 가중치 기반 랜덤 선택
-    let selectedRarity = "Common";
+    // 1. 일정 확률로 쓰레기 낚기
+    if (Math.random() < JUNK_CHANCE) {
+        const junk = JUNK_ITEMS[Math.floor(Math.random() * JUNK_ITEMS.length)];
+        // 쓰레기 아이템은 fish 데이터베이스와 형식을 맞추기 위해 'Junk' rarity를 부여
+        return { ...junk, rarity: 'Junk', price: 0, exp: 0 };
+    }
 
-    // 난이도 제한 확인
+    // 2. 현재 조건(난이도, 미끼)에서 잡을 수 있는 모든 물고기 목록 생성
     const maxRarity = DIFFICULTY_CONFIG[gameSettings.difficulty].maxRarity;
     const maxRarityVal = RARITY_ORDER[maxRarity];
-
-    // 미끼에 따른 잡을 수 있는 희귀도 목록 가져오기
     const baitRarities = BAIT_TYPES[playerStats.selectedBait].rarities;
     const allowedRarities = new Set(baitRarities.filter(r => RARITY_ORDER[r] <= maxRarityVal));
-
-    // 허용된 희귀도 내에서 가중치 계산 (만약 비어있다면 Common 추가)
     if (allowedRarities.size === 0) allowedRarities.add("Common");
 
-    let totalWeight = 0;
-    const activeWeights = {};
+    const possibleFish = FISH_DATABASE.filter(fish => allowedRarities.has(fish.rarity));
 
-    for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
-        if (allowedRarities.has(rarity)) {
-            activeWeights[rarity] = weight;
-            totalWeight += weight;
+    // 3. 가중치 계산 (날씨 효과 적용)
+    let totalWeight = 0;
+    const weightedFishList = possibleFish.map(fish => {
+        let weight = RARITY_WEIGHTS[fish.rarity];
+        // 날씨가 일치하면 가중치 5배 증가
+        if (gameSettings.currentWeather && fish.weather === gameSettings.currentWeather.effect) {
+            weight *= 5;
         }
+        totalWeight += weight;
+        return { ...fish, finalWeight: weight };
+    });
+
+    if (weightedFishList.length === 0) {
+        // 잡을 수 있는 물고기가 없는 예외 케이스 (Common 등급으로 대체)
+        const commonFish = FISH_DATABASE.filter(f => f.rarity === "Common");
+        return commonFish[Math.floor(Math.random() * commonFish.length)];
     }
 
+    // 4. 가중치 기반으로 물고기 최종 선택
     const rand = Math.random() * totalWeight;
     let cumulativeWeight = 0;
-
-    for (const [rarity, weight] of Object.entries(activeWeights)) {
-        cumulativeWeight += weight;
+    for (const fish of weightedFishList) {
+        cumulativeWeight += fish.finalWeight;
         if (rand <= cumulativeWeight) {
-            selectedRarity = rarity;
-            break;
+            return fish;
         }
     }
 
-    // 해당 희귀도의 물고기들 중 하나 선택
-    const candidates = FISH_DATABASE.filter(f => f.rarity === selectedRarity);
-    // 만약 계산 오류로 후보가 없으면 Common에서 선택
-    const finalCandidates = candidates.length > 0 ? candidates : FISH_DATABASE.filter(f => f.rarity === "Common");
-    
-    return finalCandidates[Math.floor(Math.random() * finalCandidates.length)];
+    return weightedFishList[weightedFishList.length - 1]; // 만약의 경우 마지막 물고기 반환
 }
 
 function addToInventory(fish) {
@@ -1053,13 +1189,21 @@ function updateShopUI() {
     const currentLine = LINE_UPGRADES[playerStats.lineLevel - 1];
     const nextLine = LINE_UPGRADES[playerStats.lineLevel];
 
+    // 내구도 정보 추가
+    let durabilityInfo = '';
+    if (playerStats.lineLevel > 1) {
+        const breakThreshold = 3;
+        const remaining = breakThreshold - (playerStats.lineBreakCount || 0);
+        durabilityInfo = `<br><span style="color:#f87171; font-size:0.8rem;">내구도: ${remaining}/${breakThreshold} (3번 끊어지면 등급 하락)</span>`;
+    }
+
     ui.lineLevel.textContent = playerStats.lineLevel;
     if (nextLine) {
-        ui.lineInfo.innerHTML = `현재: ${currentLine.name}<br><span style="color:#38bdf8">다음: ${nextLine.name} (${nextLine.cost}G)</span>`;
+        ui.lineInfo.innerHTML = `현재: ${currentLine.name}${durabilityInfo}<br><span style="color:#38bdf8">다음: ${nextLine.name} (${nextLine.cost}G)</span>`;
         ui.upgradeLineBtn.disabled = playerStats.gold < nextLine.cost;
         ui.upgradeLineBtn.textContent = "강화하기";
     } else {
-        ui.lineInfo.textContent = `현재: ${currentLine.name} (최고 레벨)`;
+        ui.lineInfo.innerHTML = `현재: ${currentLine.name} (최고 레벨)${durabilityInfo}`;
         ui.upgradeLineBtn.disabled = true;
         ui.upgradeLineBtn.textContent = "최고 레벨";
     }
@@ -1096,7 +1240,10 @@ function buyBait(type) {
         if (!playerStats.baits[type]) playerStats.baits[type] = 0;
         playerStats.baits[type] += 10; // 10개씩 구매
         
-        alert(`${bait.name} 10개를 구매했습니다!`);
+        // 구매한 미끼를 즉시 장착하여 바로 사용할 수 있도록 함
+        playerStats.selectedBait = type;
+
+        alert(`${bait.name} 10개를 구매했습니다! (자동으로 장착됩니다)`);
         updateShopUI();
         updateUI();
         savePlayerData(playerStats);
@@ -1278,14 +1425,6 @@ function renderFishGuide() {
     guideBody.appendChild(diffInfo);
 
     const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical"];
-    const reqRod = {
-        "Common": "기본 낚싯대 (Lv.1)",
-        "Uncommon": "기본 낚싯대 (Lv.1)",
-        "Rare": "카본 낚싯대 (Lv.2)",
-        "Epic": "티타늄 낚싯대 (Lv.3)",
-        "Legendary": "황금 낚싯대 (Lv.4)",
-        "Mythical": "황금 낚싯대 (Lv.4)"
-    };
 
     rarities.forEach(rarity => {
         const fishes = FISH_DATABASE.filter(f => f.rarity === rarity);
@@ -1293,7 +1432,7 @@ function renderFishGuide() {
 
         const sectionTitle = document.createElement('div');
         sectionTitle.className = 'guide-section-title';
-        sectionTitle.textContent = `${rarity} 등급 (필요: ${reqRod[rarity]})`;
+        sectionTitle.textContent = `${rarity} 등급`;
         guideBody.appendChild(sectionTitle);
 
         const grid = document.createElement('div');
@@ -1338,18 +1477,11 @@ function renderEquipmentGuide() {
     // 낚싯대 섹션
     const rodTitle = document.createElement('div');
     rodTitle.className = 'guide-section-title';
-    rodTitle.textContent = '🎣 낚싯대 (희귀 물고기 잠금 해제)';
+    rodTitle.textContent = '🎣 낚싯대 (릴링 파워 증가)';
     guideBody.appendChild(rodTitle);
 
     const rodList = document.createElement('div');
     rodList.className = 'equip-list';
-    
-    const rodEffects = [
-        "기본 물고기 안전하게 제압",
-        "희귀(Rare) 물고기 안전하게 제압",
-        "영웅(Epic) 물고기 안전하게 제압",
-        "전설/신화까지 안전하게 제압"
-    ];
 
     ROD_UPGRADES.forEach((rod, index) => {
         const card = document.createElement('div');
@@ -1359,7 +1491,7 @@ function renderEquipmentGuide() {
             <div style="flex:1">
                 <div class="guide-name">${rod.name} (Lv.${index + 1})</div>
                 <div class="guide-stats">비용: ${rod.cost === 0 ? '기본 지급' : rod.cost.toLocaleString() + ' G'}</div>
-                <div class="guide-req">${rodEffects[index] || '공격력 증가'}</div>
+                <div class="guide-req" style="color:#94a3b8">물고기를 더 빠르게 끌어당깁니다.</div>
             </div>
         `;
         rodList.appendChild(card);
@@ -1369,7 +1501,7 @@ function renderEquipmentGuide() {
     // 낚싯줄 섹션
     const lineTitle = document.createElement('div');
     lineTitle.className = 'guide-section-title';
-    lineTitle.textContent = '🧵 낚싯줄 (물고기 저항 감소)';
+    lineTitle.textContent = '🧵 낚싯줄 (텐션 제어력 증가)';
     guideBody.appendChild(lineTitle);
 
     const lineList = document.createElement('div');
@@ -1383,7 +1515,7 @@ function renderEquipmentGuide() {
             <div style="flex:1">
                 <div class="guide-name">${line.name} (Lv.${index + 1})</div>
                 <div class="guide-stats">비용: ${line.cost === 0 ? '기본 지급' : line.cost.toLocaleString() + ' G'}</div>
-                <div class="guide-req">줄 끊어짐 방지 효과 ${index + 1}단계</div>
+                <div class="guide-req" style="color:#94a3b8">텐션 관리가 쉬워지고 줄이 덜 손상됩니다.</div>
             </div>
         `;
         lineList.appendChild(card);

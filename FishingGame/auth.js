@@ -98,6 +98,7 @@ async function handleSignUp(e) {
         inventory: [],
         baits: { "paste": Infinity }, // 기본 미끼 무제한
         selected_bait: "paste",
+        line_break_count: 0,
         updated_at: new Date()
     };
 
@@ -202,6 +203,7 @@ async function savePlayerData(stats, retryCount = 0) {
         inventory: stats.inventory,
         baits: stats.baits,
         selected_bait: stats.selectedBait,
+        line_break_count: stats.lineBreakCount,
         updated_at: new Date()
     };
 
@@ -215,8 +217,11 @@ async function savePlayerData(stats, retryCount = 0) {
                 indicator.textContent = "⚠️ DB 업데이트 필요";
                 indicator.style.color = "#ef4444";
             }
-            console.error("Supabase SQL Editor에서 'baits'와 'selected_bait' 컬럼을 추가해주세요.");
-            return; 
+            // 에러 메시지에서 누락된 컬럼 이름 추출하여 더 정확한 안내 제공
+            const missingColumnMatch = error.message.match(/Could not find the '(.+?)' column/);
+            const missingColumn = missingColumnMatch ? missingColumnMatch[1] : "알 수 없는";
+            console.error(`Supabase SQL Editor에서 '${missingColumn}' 컬럼을 추가해주세요.`);
+            return;
         }
 
         // 재시도 로직 (최대 3번)
