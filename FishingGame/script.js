@@ -61,54 +61,54 @@ const FISH_DATABASE = [
     { name: "피라미", rarity: "Common", price: 30, exp: 3, emoji: "🐟" },
     
     // Uncommon (드묾)
-    { name: "광어", rarity: "Uncommon", price: 300, exp: 30, emoji: "🐟" },
-    { name: "우럭", rarity: "Uncommon", price: 350, exp: 35, emoji: "🐟" },
+    { name: "광어", rarity: "Uncommon", price: 300, exp: 30, emoji: "🐠", hue: 50 },
+    { name: "우럭", rarity: "Uncommon", price: 350, exp: 35, emoji: "🐟", hue: 270 },
     { name: "오징어", rarity: "Uncommon", price: 400, exp: 40, emoji: "🦑", weather: "night" },
     { name: "문어", rarity: "Uncommon", price: 450, exp: 45, emoji: "🐙", weather: "night" },
-    { name: "연어", rarity: "Uncommon", price: 500, exp: 50, emoji: "🐠" },
-    { name: "삼치", rarity: "Uncommon", price: 320, exp: 32, emoji: "🐟" },
-    { name: "농어", rarity: "Uncommon", price: 380, exp: 38, emoji: "🐟" },
-    { name: "도다리", rarity: "Uncommon", price: 310, exp: 31, emoji: "🐟" },
-    { name: "쥐치", rarity: "Uncommon", price: 280, exp: 28, emoji: "🐠" },
-    { name: "가자미", rarity: "Uncommon", price: 290, exp: 29, emoji: "🐟" },
-    { name: "쭈꾸미", rarity: "Uncommon", price: 420, exp: 42, emoji: "🐙" },
+    { name: "연어", rarity: "Uncommon", price: 500, exp: 50, emoji: "🐟", hue: 330 },
+    { name: "삼치", rarity: "Uncommon", price: 320, exp: 32, emoji: "🐟", hue: 150 },
+    { name: "농어", rarity: "Uncommon", price: 380, exp: 38, emoji: "🐟", hue: 210 },
+    { name: "도다리", rarity: "Uncommon", price: 310, exp: 31, emoji: "🐟", hue: 30 },
+    { name: "쥐치", rarity: "Uncommon", price: 280, exp: 28, emoji: "🐠", hue: 120 },
+    { name: "가자미", rarity: "Uncommon", price: 290, exp: 29, emoji: "🐟", hue: 60 },
+    { name: "쭈꾸미", rarity: "Uncommon", price: 420, exp: 42, emoji: "🐙", hue: 40 },
 
     // Rare (희귀)
-    { name: "참돔", rarity: "Rare", price: 1000, exp: 100, emoji: "🐠" },
-    { name: "돌돔", rarity: "Rare", price: 1200, exp: 120, emoji: "🐠" },
+    { name: "참돔", rarity: "Rare", price: 1000, exp: 100, emoji: "🐠", hue: 320 },
+    { name: "돌돔", rarity: "Rare", price: 1200, exp: 120, emoji: "🐠", hue: 200 },
     { name: "복어", rarity: "Rare", price: 1500, exp: 150, emoji: "🐡" },
-    { name: "아귀", rarity: "Rare", price: 1300, exp: 130, emoji: "🐠" },
-    { name: "쏘가리", rarity: "Rare", price: 1100, exp: 110, emoji: "🐠" },
-    { name: "장어", rarity: "Rare", price: 1400, exp: 140, emoji: "🐟", weather: "rainy" },
-    { name: "민어", rarity: "Rare", price: 1600, exp: 160, emoji: "🐟" },
-    { name: "방어", rarity: "Rare", price: 1250, exp: 125, emoji: "🐟" },
-    { name: "감성돔", rarity: "Rare", price: 1150, exp: 115, emoji: "🐟" },
+    { name: "아귀", rarity: "Rare", price: 1300, exp: 130, emoji: "🐠", hue: 90 },
+    { name: "쏘가리", rarity: "Rare", price: 1100, exp: 110, emoji: "🐠", hue: 60 },
+    { name: "장어", rarity: "Rare", price: 1400, exp: 140, emoji: "🐍", weather: "rainy" },
+    { name: "민어", rarity: "Rare", price: 1600, exp: 160, emoji: "🐟", hue: 300 },
+    { name: "방어", rarity: "Rare", price: 1250, exp: 125, emoji: "🐟", hue: 40 },
+    { name: "감성돔", rarity: "Rare", price: 1150, exp: 115, emoji: "🐟", hue: 250 },
     { name: "랍스터", rarity: "Rare", price: 1800, exp: 180, emoji: "🦞" },
 
     // Epic (영웅)
-    { name: "다금바리", rarity: "Epic", price: 5000, exp: 500, emoji: "🐟" },
-    { name: "참치", rarity: "Epic", price: 6000, exp: 600, emoji: "🐟" },
-    { name: "킹크랩", rarity: "Epic", price: 5500, exp: 550, emoji: "🦀" },
-    { name: "돗돔", rarity: "Epic", price: 5200, exp: 520, emoji: "🐟" },
-    { name: "붉은바다거북", rarity: "Epic", price: 5800, exp: 580, emoji: "🐢" },
-    { name: "대왕문어", rarity: "Epic", price: 5300, exp: 530, emoji: "🐙" },
-    { name: "철갑상어", rarity: "Epic", price: 6500, exp: 650, emoji: "🐟" },
-    { name: "돛새치", rarity: "Epic", price: 6200, exp: 620, emoji: "🐟" },
+    { name: "다금바리", rarity: "Epic", price: 5000, exp: 500, emoji: "🐟", hue: 280 },
+    { name: "참치", rarity: "Epic", price: 6000, exp: 600, emoji: "🐠", hue: 220 },
+    { name: "킹크랩", rarity: "Epic", price: 5500, exp: 550, emoji: "🦀", hue: 340 },
+    { name: "돗돔", rarity: "Epic", price: 5200, exp: 520, emoji: "🐟", hue: 100 },
+    { name: "붉은바다거북", rarity: "Epic", price: 5800, exp: 580, emoji: "🐢", hue: 300 },
+    { name: "대왕문어", rarity: "Epic", price: 5300, exp: 530, emoji: "🐙", hue: 280 },
+    { name: "철갑상어", rarity: "Epic", price: 6500, exp: 650, emoji: "🐊" },
+    { name: "돛새치", rarity: "Epic", price: 6200, exp: 620, emoji: "🐟", hue: 190 },
 
     // Legendary (전설)
-    { name: "청새치", rarity: "Legendary", price: 20000, exp: 2000, emoji: "🐟" },
+    { name: "청새치", rarity: "Legendary", price: 20000, exp: 2000, emoji: "🐠", hue: 180 },
     { name: "백상아리", rarity: "Legendary", price: 25000, exp: 2500, emoji: "🦈", weather: "stormy" },
-    { name: "황금잉어", rarity: "Legendary", price: 30000, exp: 3000, emoji: "🐠" },
+    { name: "황금잉어", rarity: "Legendary", price: 30000, exp: 3000, emoji: "🐠", hue: 45 },
     { name: "범고래", rarity: "Legendary", price: 28000, exp: 2800, emoji: "🐋" },
-    { name: "대왕오징어", rarity: "Legendary", price: 22000, exp: 2200, emoji: "🦑" },
-    { name: "실러캔스", rarity: "Legendary", price: 35000, exp: 3500, emoji: "🐟" },
+    { name: "대왕오징어", rarity: "Legendary", price: 22000, exp: 2200, emoji: "🦑", hue: 310 },
+    { name: "실러캔스", rarity: "Legendary", price: 35000, exp: 3500, emoji: "🐠", hue: 260 },
     { name: "개복치", rarity: "Legendary", price: 21000, exp: 2100, emoji: "🐠" },
 
     // Mythical (신화)
-    { name: "크라켄", rarity: "Mythical", price: 99999, exp: 10000, emoji: "🦑" },
+    { name: "크라켄", rarity: "Mythical", price: 99999, exp: 10000, emoji: "🦑", hue: 60 },
     { name: "리바이어던", rarity: "Mythical", price: 150000, exp: 15000, emoji: "🐉", weather: "stormy" },
-    { name: "모비딕", rarity: "Mythical", price: 120000, exp: 12000, emoji: "🐋" },
-    { name: "히드라", rarity: "Mythical", price: 130000, exp: 13000, emoji: "🐍" }
+    { name: "모비딕", rarity: "Mythical", price: 120000, exp: 12000, emoji: "🐋", hue: 180 },
+    { name: "히드라", rarity: "Mythical", price: 130000, exp: 13000, emoji: "🐍", hue: 290 }
 ];
 
 const RARITY_WEIGHTS = {
@@ -785,14 +785,6 @@ function startReelingGame() {
             damage = Math.max(0.2, damage); // 최소 데미지
             
             playerStats.lineHealth -= damage;
-
-            // 낚싯대 파손 확률 (매우 희귀)
-            const rodBreakChance = 0.0005; // 0.05%
-            if (playerStats.rodLevel > 1 && Math.random() < rodBreakChance) {
-                handleRodBreak();
-                return; // 릴링 즉시 중단
-            }
-            playerStats.lineHealth -= damage;
             
             ui.mainMessage.textContent = "줄이 끊어지려 합니다!! (푸세요)";
             ui.mainMessage.style.color = "#ef4444";
@@ -996,30 +988,6 @@ function handleJunkCatch(junkItem) {
     showCatchModal(junkItem);
 }
 
-function handleRodBreak() {
-    clearInterval(playerStats.reelingInterval);
-    currentState = GameState.IDLE;
-    ui.bobber.style.animation = "bobber-float 1s ease-in-out infinite";
-    ui.mainMessage.style.color = "white";
-    ui.reelingOverlay.style.boxShadow = 'none';
-
-    const brokenRod = ROD_UPGRADES[playerStats.rodLevel - 1];
-    playerStats.rodLevel--;
-    
-    ui.mainMessage.textContent = "쨍그랑!!! 낚싯대가 부러졌습니다!";
-    ui.subMessage.textContent = `${brokenRod.name}이(가) 파손되어 등급이 하락했습니다.`;
-    ui.mainMessage.style.color = "#ef4444";
-    vibrate([200, 100, 200]);
-
-    // alert는 다른 UI 업데이트가 끝난 후 표시
-    setTimeout(() => {
-        alert(`💥 아뿔싸! 무리한 릴링으로 인해 ${brokenRod.name}이(가) 부러졌습니다!\n낚싯대 등급이 1 하락합니다.`);
-    }, 100);
-    
-    savePlayerData(playerStats);
-    updateUI();
-}
-
 function showCatchModal(fish, actualPrice) {
     if (fish.rarity === 'Junk') {
         const titles = ["이런...", "에구머니나!", "이게 뭐야!"];
@@ -1039,6 +1007,7 @@ function showCatchModal(fish, actualPrice) {
         ui.catchName.textContent = fish.name;
         ui.catchRarity.textContent = fish.rarity;
         ui.catchPrice.textContent = `💰 ${actualPrice.toLocaleString()} G`;
+        ui.catchEmoji.style.filter = fish.hue ? `hue-rotate(${fish.hue}deg)` : 'none';
         
         // 희귀도에 따른 텍스트 색상 변경
         const colors = {
@@ -1335,8 +1304,9 @@ function updateInventoryUI() {
         sortedInventory.forEach(item => {
             const itemEl = document.createElement('div');
             itemEl.className = `inventory-item rarity-${item.rarity.toLowerCase()}`;
+            const hueStyle = item.hue ? `style="filter: hue-rotate(${item.hue}deg)"` : '';
             itemEl.innerHTML = `
-                <div class="inv-emoji">${item.emoji}</div>
+                <div class="inv-emoji" ${hueStyle}>${item.emoji}</div>
                 <div class="inv-info">
                     <div class="inv-name">${item.name} <span class="inv-count">x${item.count}</span></div>
                     <div class="inv-price">${item.price} G</div>
@@ -1446,10 +1416,11 @@ function renderFishGuide() {
 
             const card = document.createElement('div');
             card.className = `guide-card rarity-${rarity.toLowerCase()}`;
+            const hueStyle = fish.hue ? `style="filter: hue-rotate(${fish.hue}deg)"` : '';
             
             if (isObtainable) {
                 card.innerHTML = `
-                    <div class="guide-emoji">${fish.emoji}</div>
+                    <div class="guide-emoji" ${hueStyle}>${fish.emoji}</div>
                     <div class="guide-name">${fish.name}</div>
                     <div class="guide-stats" style="color:#fbbf24">💰 ${currentPrice.toLocaleString()} G</div>
                     <div class="guide-stats" style="color:#38bdf8">✨ ${currentExp} EXP</div>
@@ -1458,7 +1429,7 @@ function renderFishGuide() {
             } else {
                 card.style.opacity = "0.5";
                 card.innerHTML = `
-                    <div class="guide-emoji">${fish.emoji}</div>
+                    <div class="guide-emoji" ${hueStyle}>${fish.emoji}</div>
                     <div class="guide-name">${fish.name}</div>
                     <div class="guide-stats" style="color:#ef4444; font-weight:bold; margin-top:5px;">⛔ 획득 불가</div>
                     <div class="guide-req" style="color:#94a3b8">난이도 상향 필요</div>
