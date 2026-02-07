@@ -49,20 +49,24 @@ const JUNK_CHANCE = 0.10; // 10% 확률로 쓰레기 획득
 // 물고기 데이터베이스 확장
 const FISH_DATABASE = [
     // Common (흔함)
-    { name: "고등어", rarity: "Common", price: 100, exp: 10, emoji: "🐟" },
-    { name: "멸치", rarity: "Common", price: 50, exp: 5, emoji: "🐟" },
-    { name: "송어", rarity: "Common", price: 120, exp: 12, emoji: "🐠" },
-    { name: "붕어", rarity: "Common", price: 80, exp: 8, emoji: "🐠" },
-    { name: "망둥어", rarity: "Common", price: 60, exp: 6, emoji: "🐟" },
-    { name: "전어", rarity: "Common", price: 110, exp: 11, emoji: "🐟" },
-    { name: "꽁치", rarity: "Common", price: 90, exp: 9, emoji: "🐟" },
-    { name: "정어리", rarity: "Common", price: 70, exp: 7, emoji: "🐟" },
-    { name: "빙어", rarity: "Common", price: 40, exp: 4, emoji: "🐟" },
-    { name: "피라미", rarity: "Common", price: 30, exp: 3, emoji: "🐟" },
+    { name: "고등어", rarity: "Common", price: 100, exp: 10, emoji: "🐟", hue: 200 },
+    { name: "멸치", rarity: "Common", price: 50, exp: 5, emoji: "🐟", hue: 0 },
+    { name: "송어", rarity: "Common", price: 120, exp: 12, emoji: "🐠", hue: 30 },
+    { name: "붕어", rarity: "Common", price: 80, exp: 8, emoji: "🐠", hue: 40 },
+    { name: "망둥어", rarity: "Common", price: 60, exp: 6, emoji: "🐟", hue: 20 },
+    { name: "전어", rarity: "Common", price: 110, exp: 11, emoji: "🐟", hue: 180 },
+    { name: "꽁치", rarity: "Common", price: 90, exp: 9, emoji: "🐟", hue: 190 },
+    { name: "정어리", rarity: "Common", price: 70, exp: 7, emoji: "🐟", hue: 210 },
+    { name: "빙어", rarity: "Common", price: 40, exp: 4, emoji: "🐟", hue: 170 },
+    { name: "피라미", rarity: "Common", price: 30, exp: 3, emoji: "🐟", hue: 10 },
+    { name: "미꾸라지", rarity: "Common", price: 60, exp: 6, emoji: "🐟", hue: 25 },
+    { name: "버들치", rarity: "Common", price: 55, exp: 5, emoji: "🐟", hue: 90 },
+    { name: "갈겨니", rarity: "Common", price: 65, exp: 6, emoji: "🐟", hue: 150 },
     
     // Uncommon (드묾)
     { name: "광어", rarity: "Uncommon", price: 300, exp: 30, emoji: "🐠", hue: 50 },
     { name: "우럭", rarity: "Uncommon", price: 350, exp: 35, emoji: "🐟", hue: 270 },
+    { name: "갈치", rarity: "Uncommon", price: 370, exp: 37, emoji: "🐟", hue: 210 },
     { name: "오징어", rarity: "Uncommon", price: 400, exp: 40, emoji: "🦑", weather: "night" },
     { name: "문어", rarity: "Uncommon", price: 450, exp: 45, emoji: "🐙", weather: "night" },
     { name: "연어", rarity: "Uncommon", price: 500, exp: 50, emoji: "🐟", hue: 330 },
@@ -72,6 +76,9 @@ const FISH_DATABASE = [
     { name: "쥐치", rarity: "Uncommon", price: 280, exp: 28, emoji: "🐠", hue: 120 },
     { name: "가자미", rarity: "Uncommon", price: 290, exp: 29, emoji: "🐟", hue: 60 },
     { name: "쭈꾸미", rarity: "Uncommon", price: 420, exp: 42, emoji: "🐙", hue: 40 },
+    { name: "볼락", rarity: "Uncommon", price: 330, exp: 33, emoji: "🐟", hue: 280 },
+    { name: "노래미", rarity: "Uncommon", price: 340, exp: 34, emoji: "🐟", hue: 45 },
+    { name: "학꽁치", rarity: "Uncommon", price: 360, exp: 36, emoji: "🐟", hue: 190 },
 
     // Rare (희귀)
     { name: "참돔", rarity: "Rare", price: 1000, exp: 100, emoji: "🐠", hue: 320 },
@@ -84,6 +91,9 @@ const FISH_DATABASE = [
     { name: "방어", rarity: "Rare", price: 1250, exp: 125, emoji: "🐟", hue: 40 },
     { name: "감성돔", rarity: "Rare", price: 1150, exp: 115, emoji: "🐟", hue: 250 },
     { name: "랍스터", rarity: "Rare", price: 1800, exp: 180, emoji: "🦞" },
+    { name: "가물치", rarity: "Rare", price: 1100, exp: 110, emoji: "🐟", hue: 10 },
+    { name: "은어", rarity: "Rare", price: 1050, exp: 105, emoji: "🐟", hue: 160 },
+    { name: "산천어", rarity: "Rare", price: 1150, exp: 115, emoji: "🐟", hue: 220 },
 
     // Epic (영웅)
     { name: "다금바리", rarity: "Epic", price: 5000, exp: 500, emoji: "🐟", hue: 280 },
@@ -94,6 +104,9 @@ const FISH_DATABASE = [
     { name: "대왕문어", rarity: "Epic", price: 5300, exp: 530, emoji: "🐙", hue: 280 },
     { name: "철갑상어", rarity: "Epic", price: 6500, exp: 650, emoji: "🐊" },
     { name: "돛새치", rarity: "Epic", price: 6200, exp: 620, emoji: "🐟", hue: 190 },
+    { name: "황쏘가리", rarity: "Epic", price: 5100, exp: 510, emoji: "🐟", hue: 50 },
+    { name: "무지개송어", rarity: "Epic", price: 5400, exp: 540, emoji: "🐟", hue: 300 },
+    { name: "대왕메기", rarity: "Epic", price: 5600, exp: 560, emoji: "🐟", hue: 20 },
 
     // Legendary (전설)
     { name: "청새치", rarity: "Legendary", price: 20000, exp: 2000, emoji: "🐠", hue: 180 },
@@ -103,12 +116,18 @@ const FISH_DATABASE = [
     { name: "대왕오징어", rarity: "Legendary", price: 22000, exp: 2200, emoji: "🦑", hue: 310 },
     { name: "실러캔스", rarity: "Legendary", price: 35000, exp: 3500, emoji: "🐠", hue: 260 },
     { name: "개복치", rarity: "Legendary", price: 21000, exp: 2100, emoji: "🐠" },
+    { name: "전기뱀장어", rarity: "Legendary", price: 23000, exp: 2300, emoji: "🐍", hue: 60 },
+    { name: "아로와나", rarity: "Legendary", price: 26000, exp: 2600, emoji: "🐠", hue: 10 },
+    { name: "피라루쿠", rarity: "Legendary", price: 29000, exp: 2900, emoji: "🐟", hue: 350 },
 
     // Mythical (신화)
     { name: "크라켄", rarity: "Mythical", price: 99999, exp: 10000, emoji: "🦑", hue: 60 },
     { name: "리바이어던", rarity: "Mythical", price: 150000, exp: 15000, emoji: "🐉", weather: "stormy" },
     { name: "모비딕", rarity: "Mythical", price: 120000, exp: 12000, emoji: "🐋", hue: 180 },
-    { name: "히드라", rarity: "Mythical", price: 130000, exp: 13000, emoji: "🐍", hue: 290 }
+    { name: "히드라", rarity: "Mythical", price: 130000, exp: 13000, emoji: "🐍", hue: 290 },
+    { name: "용왕의 사자", rarity: "Mythical", price: 110000, exp: 11000, emoji: "🐢", hue: 150 },
+    { name: "네시", rarity: "Mythical", price: 140000, exp: 14000, emoji: "🦕", hue: 120 },
+    { name: "심해의 주인", rarity: "Mythical", price: 160000, exp: 16000, emoji: "🐙", hue: 200 }
 ];
 
 const RARITY_WEIGHTS = {
