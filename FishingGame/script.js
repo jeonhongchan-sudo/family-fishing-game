@@ -215,6 +215,7 @@ const DIFFICULTY_CONFIG = {
 let gameSettings = {
     difficulty: 'HARD', // 기본값: 상
     vibration: true,
+    useRealImages: false, // 기본값: 이모지 모드
     currentWeather: null
 };
 
@@ -305,6 +306,7 @@ const ui = {
     settingsBtn: document.getElementById('settings-btn'),
     settingsModal: document.getElementById('settings-modal'),
     closeSettingsBtn: document.getElementById('close-settings'),
+    imageModeToggle: document.getElementById('image-mode-toggle'),
     vibrationToggle: document.getElementById('vibration-toggle'),
     diffDesc: document.getElementById('diff-desc')
 };
@@ -357,6 +359,7 @@ function addEventListeners() {
     ui.settingsBtn.addEventListener('click', openSettings);
     ui.closeSettingsBtn.addEventListener('click', closeSettings);
     ui.vibrationToggle.addEventListener('click', toggleVibration);
+    ui.imageModeToggle.addEventListener('click', toggleImageMode);
     
     document.querySelectorAll('.diff-btn').forEach(btn => {
         btn.addEventListener('click', (e) => setDifficulty(e.currentTarget.dataset.diff));
@@ -1022,11 +1025,25 @@ function showCatchModal(fish, actualPrice) {
         const titles = ["🎉 월척이다!", "🎣 나이스 캐치!", "✨ 대박!", "🌊 바다의 선물!", "🐟 잡았다!"];
         ui.catchTitle.textContent = titles[Math.floor(Math.random() * titles.length)];
 
-        ui.catchEmoji.textContent = fish.emoji;
+        // 이미지 모드 처리
+        ui.catchEmoji.innerHTML = ''; // 초기화
+        ui.catchEmoji.style.filter = 'none'; // 필터 초기화
+
+        if (gameSettings.useRealImages) {
+            const onError = "this.style.display='none'; this.nextElementSibling.style.display='block';";
+            const hueStyle = fish.hue ? `filter: hue-rotate(${fish.hue}deg)` : '';
+            ui.catchEmoji.innerHTML = `
+                <img src="images/${fish.name}.png" alt="${fish.name}" style="width:150px; height:150px; object-fit:contain;" onerror="${onError}">
+                <span style="display:none; ${hueStyle}">${fish.emoji}</span>
+            `;
+        } else {
+            ui.catchEmoji.textContent = fish.emoji;
+            ui.catchEmoji.style.filter = fish.hue ? `hue-rotate(${fish.hue}deg)` : 'none';
+        }
+
         ui.catchName.textContent = fish.name;
         ui.catchRarity.textContent = fish.rarity;
         ui.catchPrice.textContent = `💰 ${actualPrice.toLocaleString()} G`;
-        ui.catchEmoji.style.filter = fish.hue ? `hue-rotate(${fish.hue}deg)` : 'none';
         
         // 희귀도에 따른 텍스트 색상 변경
         const colors = {
@@ -1323,9 +1340,11 @@ function updateInventoryUI() {
         sortedInventory.forEach(item => {
             const itemEl = document.createElement('div');
             itemEl.className = `inventory-item rarity-${item.rarity.toLowerCase()}`;
-            const hueStyle = item.hue ? `style="filter: hue-rotate(${item.hue}deg)"` : '';
+            
+            const iconHtml = getFishIconHtml(item, 'inv');
+
             itemEl.innerHTML = `
-                <div class="inv-emoji" ${hueStyle}>${item.emoji}</div>
+                ${iconHtml}
                 <div class="inv-info">
                     <div class="inv-name">${item.name} <span class="inv-count">x${item.count}</span></div>
                     <div class="inv-price">${item.price} G</div>
@@ -1435,11 +1454,11 @@ function renderFishGuide() {
 
             const card = document.createElement('div');
             card.className = `guide-card rarity-${rarity.toLowerCase()}`;
-            const hueStyle = fish.hue ? `style="filter: hue-rotate(${fish.hue}deg)"` : '';
+            const iconHtml = getFishIconHtml(fish, 'guide');
             
             if (isObtainable) {
                 card.innerHTML = `
-                    <div class="guide-emoji" ${hueStyle}>${fish.emoji}</div>
+                    ${iconHtml}
                     <div class="guide-name">${fish.name}</div>
                     <div class="guide-stats" style="color:#fbbf24">💰 ${currentPrice.toLocaleString()} G</div>
                     <div class="guide-stats" style="color:#38bdf8">✨ ${currentExp} EXP</div>
@@ -1448,7 +1467,7 @@ function renderFishGuide() {
             } else {
                 card.style.opacity = "0.5";
                 card.innerHTML = `
-                    <div class="guide-emoji" ${hueStyle}>${fish.emoji}</div>
+                    ${iconHtml}
                     <div class="guide-name">${fish.name}</div>
                     <div class="guide-stats" style="color:#ef4444; font-weight:bold; margin-top:5px;">⛔ 획득 불가</div>
                     <div class="guide-req" style="color:#94a3b8">난이도 상향 필요</div>
@@ -1538,6 +1557,15 @@ function toggleVibration() {
     updateSettingsUI();
 }
 
+function toggleImageMode() {
+    gameSettings.useRealImages = !gameSettings.useRealImages;
+    saveLocalSettings();
+    updateSettingsUI();
+    // 열려있는 UI 갱신
+    if (!ui.inventoryModal.classList.contains('hidden')) updateInventoryUI();
+    if (!ui.guideModal.classList.contains('hidden')) renderFishGuide();
+}
+
 function updateSettingsUI() {
     // 난이도 버튼 상태
     document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -1558,6 +1586,15 @@ function updateSettingsUI() {
     } else {
         ui.vibrationToggle.textContent = "꺼짐 (OFF)";
         ui.vibrationToggle.className = "toggle-btn toggle-off";
+    }
+
+    // 이미지 모드 버튼 상태
+    if (gameSettings.useRealImages) {
+        ui.imageModeToggle.textContent = "실물 이미지 (Real)";
+        ui.imageModeToggle.className = "toggle-btn toggle-on";
+    } else {
+        ui.imageModeToggle.textContent = "이모지 (Emoji)";
+        ui.imageModeToggle.className = "toggle-btn toggle-off";
     }
 }
 
@@ -1654,6 +1691,33 @@ function makeReelButtonDraggable(element) {
     // 기존의 click 이벤트 대신 mousedown/touchstart로 로직 통합
     element.addEventListener('mousedown', onDown);
     element.addEventListener('touchstart', onDown, { passive: false });
+}
+
+// --- 물고기 아이콘 생성 헬퍼 (이미지/이모지 처리) ---
+function getFishIconHtml(fish, type) {
+    const emojiClass = `${type}-emoji`; // inv-emoji, guide-emoji
+    
+    // 쓰레기이거나 이미지 모드가 꺼져있으면 이모지 반환
+    if (fish.rarity === 'Junk' || !gameSettings.useRealImages) {
+        const hueStyle = fish.hue ? `style="filter: hue-rotate(${fish.hue}deg)"` : '';
+        return `<div class="${emojiClass}" ${hueStyle}>${fish.emoji}</div>`;
+    }
+
+    // 실물 이미지 모드 (이미지 로드 실패 시 이모지로 대체하는 로직 포함)
+    // type에 따른 크기 스타일 지정 (CSS 클래스가 font-size로 제어되므로 픽셀 크기 강제)
+    let sizeStyle = "";
+    if (type === 'inv') sizeStyle = "width: 40px; height: 40px;";
+    if (type === 'guide') sizeStyle = "width: 50px; height: 50px; margin: 0 auto 5px auto;";
+
+    const onError = "this.style.display='none'; this.nextElementSibling.style.display='block';";
+    const hueStyle = fish.hue ? `filter: hue-rotate(${fish.hue}deg)` : '';
+
+    return `
+        <div class="${emojiClass}" style="${sizeStyle} display:flex; justify-content:center; align-items:center;">
+            <img src="images/${fish.name}.png" alt="${fish.name}" style="width:100%; height:100%; object-fit:contain;" onerror="${onError}">
+            <span style="display:none; ${hueStyle}">${fish.emoji}</span>
+        </div>
+    `;
 }
 
 // 유틸리티 함수
