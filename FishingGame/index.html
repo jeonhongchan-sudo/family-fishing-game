@@ -207,6 +207,21 @@
             </div>
         </div>
 
+        <!-- 이미지 확대 보기 모달 (새로 추가됨) -->
+        <div id="image-view-modal" class="modal hidden" style="z-index: 200;">
+            <div class="modal-content image-view-content">
+                <div class="modal-header">
+                    <h2 id="image-view-title">물고기 이름</h2>
+                    <span class="close-btn" id="close-image-view">&times;</span>
+                </div>
+                <div class="image-view-body">
+                    <img id="image-view-img" src="" alt="물고기 이미지">
+                    <div id="image-view-emoji" class="hidden">🐟</div>
+                    <p id="image-view-desc" class="image-view-desc"></p>
+                </div>
+            </div>
+        </div>
+
         <!-- 랭킹 모달 -->
         <div id="ranking-modal" class="modal hidden">
             <div class="modal-content">

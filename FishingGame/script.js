@@ -305,6 +305,14 @@ const ui = {
     // 도감 요소
     guideModal: document.getElementById('guide-modal'),
     closeGuideBtn: document.getElementById('close-guide'),
+    
+    // 이미지 확대 모달 요소
+    imageViewModal: document.getElementById('image-view-modal'),
+    closeImageViewBtn: document.getElementById('close-image-view'),
+    imageViewTitle: document.getElementById('image-view-title'),
+    imageViewImg: document.getElementById('image-view-img'),
+    imageViewEmoji: document.getElementById('image-view-emoji'),
+    imageViewDesc: document.getElementById('image-view-desc'),
 
     // 설정 요소
     settingsBtn: document.getElementById('settings-btn'),
@@ -358,6 +366,7 @@ function addEventListeners() {
     ui.upgradeLineBtn.addEventListener('click', () => buyUpgrade('line'));
     ui.catchCloseBtn.addEventListener('click', closeCatchModal);
     ui.closeGuideBtn.addEventListener('click', closeGuide);
+    ui.closeImageViewBtn.addEventListener('click', closeImageView);
     
     // 설정 관련 이벤트
     ui.settingsBtn.addEventListener('click', openSettings);
@@ -1459,6 +1468,7 @@ function renderFishGuide() {
             const card = document.createElement('div');
             card.className = `guide-card rarity-${rarity.toLowerCase()}`;
             const iconHtml = getFishIconHtml(fish, 'guide');
+            card.onclick = () => openImageView(fish); // 클릭 이벤트 연결
             
             if (isObtainable) {
                 card.innerHTML = `
@@ -1481,6 +1491,47 @@ function renderFishGuide() {
         });
         guideBody.appendChild(grid);
     });
+}
+
+function openImageView(fish) {
+    ui.imageViewTitle.textContent = fish.name;
+    
+    // 이미지 초기화 및 설정
+    ui.imageViewImg.style.display = 'block';
+    ui.imageViewEmoji.style.display = 'none';
+    ui.imageViewImg.src = `images/${fish.name}.png`;
+    
+    // 이미지 로드 실패 시 이모지로 대체 (onerror 핸들러)
+    ui.imageViewImg.onerror = () => {
+        ui.imageViewImg.style.display = 'none';
+        ui.imageViewEmoji.style.display = 'block';
+        ui.imageViewEmoji.textContent = fish.emoji;
+        if (fish.hue) {
+            ui.imageViewEmoji.style.filter = `hue-rotate(${fish.hue}deg)`;
+        } else {
+            ui.imageViewEmoji.style.filter = 'none';
+        }
+    };
+
+    // 상세 설명 구성
+    let desc = `[ ${fish.rarity} ]\n`;
+    desc += `💰 가치: ${fish.price.toLocaleString()} G\n`;
+    desc += `✨ 경험치: ${fish.exp} EXP`;
+    
+    if (fish.weather) {
+        const weatherMap = {
+            "sunny": "맑음", "foggy": "안개", "rainy": "비", "windy": "바람",
+            "cloudy": "구름", "stormy": "폭풍", "night": "밤", "sunset": "노을"
+        };
+        desc += `\n🌤️ 출몰: ${weatherMap[fish.weather] || fish.weather}`;
+    }
+    
+    ui.imageViewDesc.textContent = desc;
+    ui.imageViewModal.classList.remove('hidden');
+}
+
+function closeImageView() {
+    ui.imageViewModal.classList.add('hidden');
 }
 
 function renderEquipmentGuide() {
