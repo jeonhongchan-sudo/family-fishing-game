@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>우리가족 낚시게임</title>
+    <title>모두의 낚시게임</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎣</text></svg>">
+    <!-- PWA 설정 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         /* 설정 버튼 및 모달 스타일 추가 */
         .settings-btn {
@@ -253,6 +260,12 @@
                     <p id="diff-desc" style="margin-top:10px; font-size:0.9rem; color:#ccc;">현재: 상 (기본 난이도)</p>
                 </div>
                 <div class="setting-group">
+                    <h3>👤 캐릭터 선택</h3>
+                    <div class="character-grid" id="character-selector">
+                        <!-- 자바스크립트로 버튼 생성됨 -->
+                    </div>
+                </div>
+                <div class="setting-group">
                     <h3>🖼️ 이미지 모드</h3>
                     <button id="image-mode-toggle" class="toggle-btn toggle-off">이모지 (Emoji)</button>
                     <p style="margin-top:5px; font-size:0.8rem; color:#94a3b8;">실물 이미지는 데이터 소모가 있을 수 있습니다.</p>
@@ -279,5 +292,13 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>
     <script src="auth.js"></script>
+    <script>
+        // PWA 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js');
+            });
+        }
+    </script>
 </body>
 </html>

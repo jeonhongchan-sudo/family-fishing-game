@@ -208,6 +208,18 @@ const BAIT_TYPES = {
     "lure": { name: "황금 루어", price: 2000, rarities: ["Rare", "Epic", "Legendary", "Mythical"], emoji: "✨", description: "전설의 물고기를 유혹하는 빛나는 루어." }
 };
 
+// 캐릭터 옵션 정의
+const CHARACTER_OPTIONS = [
+    { id: 'boy', emoji: '👦', label: '남자 아이' },
+    { id: 'girl', emoji: '👧', label: '여자 아이' },
+    { id: 'man', emoji: '👨', label: '남자' },
+    { id: 'woman', emoji: '👩', label: '여자' },
+    { id: 'grandpa', emoji: '👴', label: '할아버지' },
+    { id: 'grandma', emoji: '👵', label: '할머니' },
+    { id: 'person', emoji: '🧑', label: '기본' },
+    { id: 'alien', emoji: '👽', label: '외계인' }
+];
+
 // --- 설정 데이터 (Settings) ---
 
 const DIFFICULTY_CONFIG = {
@@ -220,7 +232,8 @@ let gameSettings = {
     difficulty: 'HARD', // 기본값: 상
     vibration: true,
     useRealImages: false, // 기본값: 이모지 모드
-    currentWeather: null
+    currentWeather: null,
+    character: '🧑' // 기본 캐릭터
 };
 
 
@@ -320,7 +333,8 @@ const ui = {
     closeSettingsBtn: document.getElementById('close-settings'),
     imageModeToggle: document.getElementById('image-mode-toggle'),
     vibrationToggle: document.getElementById('vibration-toggle'),
-    diffDesc: document.getElementById('diff-desc')
+    diffDesc: document.getElementById('diff-desc'),
+    characterSelector: document.getElementById('character-selector')
 };
 
 // --- 게임 로직 (Game Logic) ---
@@ -348,6 +362,7 @@ function startGameWithProfile(profile) {
     setWeather();
     
     loadLocalSettings(); // 로컬 설정 불러오기
+    initCharacterSelector(); // 캐릭터 선택기 초기화
 
     addEventListeners(); // 이벤트 리스너 등록 (버튼 기능 활성화)
 }
@@ -1590,12 +1605,50 @@ function renderEquipmentGuide() {
 // --- 설정(Settings) 로직 ---
 
 function openSettings() {
+    // 안전장치: 캐릭터 선택기가 비어있다면 다시 초기화
+    if (ui.characterSelector && ui.characterSelector.children.length === 0) {
+        initCharacterSelector();
+    }
     ui.settingsModal.classList.remove('hidden');
     updateSettingsUI();
 }
 
 function closeSettings() {
     ui.settingsModal.classList.add('hidden');
+}
+
+function initCharacterSelector() {
+    // UI 요소가 없으면 다시 찾기 (안전장치)
+    if (!ui.characterSelector) {
+        ui.characterSelector = document.getElementById('character-selector');
+    }
+
+    if (!ui.characterSelector) return;
+    
+    ui.characterSelector.innerHTML = '';
+    CHARACTER_OPTIONS.forEach(char => {
+        const btn = document.createElement('div');
+        btn.className = 'char-btn';
+        btn.textContent = char.emoji;
+        btn.title = char.label;
+        btn.dataset.char = char.emoji;
+        
+        btn.addEventListener('click', () => setCharacter(char.emoji));
+        
+        ui.characterSelector.appendChild(btn);
+    });
+    
+    // 생성 직후 UI 상태 업데이트 (활성화 표시)
+    updateSettingsUI();
+}
+
+function setCharacter(emoji) {
+    gameSettings.character = emoji;
+    saveLocalSettings();
+    updateCharacterDisplay();
+    updateSettingsUI();
+    
+    if (gameSettings.vibration) vibrate(50);
 }
 
 function setDifficulty(level) {
@@ -1619,6 +1672,13 @@ function toggleImageMode() {
     // 열려있는 UI 갱신
     if (!ui.inventoryModal.classList.contains('hidden')) updateInventoryUI();
     if (!ui.guideModal.classList.contains('hidden')) renderFishGuide();
+}
+
+function updateCharacterDisplay() {
+    const fisherman = document.querySelector('.fisherman');
+    if (fisherman) {
+        fisherman.textContent = gameSettings.character;
+    }
 }
 
 function updateSettingsUI() {
@@ -1651,6 +1711,16 @@ function updateSettingsUI() {
         ui.imageModeToggle.textContent = "이모지 (Emoji)";
         ui.imageModeToggle.className = "toggle-btn toggle-off";
     }
+
+    // 캐릭터 버튼 상태
+    const charBtns = ui.characterSelector.querySelectorAll('.char-btn');
+    charBtns.forEach(btn => {
+        if (btn.dataset.char === gameSettings.character) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 
 function saveLocalSettings() {
@@ -1663,6 +1733,7 @@ function loadLocalSettings() {
         try {
             const parsed = JSON.parse(saved);
             gameSettings = { ...gameSettings, ...parsed };
+            updateCharacterDisplay(); // 불러온 설정으로 캐릭터 즉시 적용
         } catch (e) {
             console.error("설정 불러오기 실패", e);
         }

@@ -906,3 +906,32 @@ h1 {
     font-size: 0.75rem;
     color: #94a3b8;
 }
+
+/* Character Selector Styles */
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.char-btn {
+    background: #1e293b;
+    border: 2px solid #475569;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.char-btn:hover { background: #334155; }
+
+.char-btn.active {
+    border-color: #38bdf8;
+    background: #0c4a6e;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
